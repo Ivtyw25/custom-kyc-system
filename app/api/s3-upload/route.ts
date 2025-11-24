@@ -3,7 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse, NextRequest } from "next/server";
 
 const region = process.env.AWS_REGION;
-const accessKeyId = process.env.MY_AWS_ACCESS_KEY_ID;
+const accessKeyId = process.env.MY_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.MY_AWS_SECRET_ACCESS_KEY;
 const bucketName = process.env.AWS_S3_BUCKET;
 
