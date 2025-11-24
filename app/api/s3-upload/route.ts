@@ -11,6 +11,7 @@ if (!region || !accessKeyId || !secretAccessKey || !bucketName) {
     throw new Error("Missing AWS configuration");
 }
 
+
 const s3 = new S3Client({
     region,
     credentials: {

@@ -8,7 +8,7 @@ interface Files {
 }
 
 export default function MobileCapture() {
-    const { sessionId } = useParams();
+    const { id: sessionId } = useParams();
     const [step, setStep] = useState(1); // 1: ID Front, 2: Selfie, 3: Done
     const [files, setFiles] = useState<Files>({});
     const [uploading, setUploading] = useState(false);
@@ -23,7 +23,7 @@ export default function MobileCapture() {
         setUploading(true);
 
         const uploadFile = async (file: File, prefix: string) => {
-            const fileName = `${sessionId}/${prefix}.jpg`;
+            const fileName = `${sessionId}/${prefix}.${file.type.split("/")[1]}`;
             // 1. Get Presigned URL
             const res = await fetch("/api/s3-upload", {
                 method: "POST",
@@ -52,6 +52,7 @@ export default function MobileCapture() {
             setStep(3);
         } catch (err) {
             alert("Error uploading images");
+            console.log(err)
         } finally {
             setUploading(false);
         }
