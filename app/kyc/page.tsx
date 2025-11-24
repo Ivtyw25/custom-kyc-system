@@ -38,7 +38,7 @@ export default function DesktopKYC() {
     if (!sessionId) return <p>Loading secure session...</p>;
 
     // The mobile URL triggers the mobile flow
-    const mobileUrl = `${window.location.origin}/kyc/mobile/${sessionId}`;
+    const mobileUrl = `https://custom-kyc-system.vercel.app/kyc/mobile/${sessionId}`;
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
