@@ -60,13 +60,6 @@ export async function POST(req: NextRequest) {
             SimilarityThreshold: 80,
         };
 
-        console.log("=== REKOGNITION DEBUG INFO ===");
-        console.log("Bucket Name:", bucketName);
-        console.log("ID Front Key:", idFrontKey);
-        console.log("Selfie Key:", selfieKey);
-        console.log("Region:", region);
-        console.log("Rekognition Parameters:", JSON.stringify(rekognitionParams, null, 2));
-        console.log("==============================");
 
         const command = new CompareFacesCommand(rekognitionParams);
 
@@ -89,8 +82,6 @@ export async function POST(req: NextRequest) {
                 match_confidence: confidence
             })
             .eq('id', sessionId);
-
-        console.log("Supabase Update Result:", supabaseResult);
 
         return NextResponse.json({ success: true, confidence });
 

@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js"; // Your supabase setup
-import QRCode from "react-qr-code";
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const supabase_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabase_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -13,62 +14,66 @@ if (!supabase_url || !supabase_anon_key) {
 const supabase = createClient(supabase_url, supabase_anon_key);
 
 export default function DesktopKYC() {
-    const [sessionId, setSessionId] = useState(null);
-    const [status, setStatus] = useState("idle"); // idle, waiting, processing, success, failed
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
-    // 1. Create a session when page loads
-    useEffect(() => {
-        async function initSession() {
-            const { data } = await supabase.from("verification_sessions").insert({}).select().single();
-            setSessionId(data.id);
-            setStatus("waiting");
+    const startVerification = async () => {
+        setLoading(true);
+        try {
+            // Create a new session
+            const { data, error } = await supabase.from("verification_sessions").insert({}).select().single();
 
-            // 2. Listen for changes from the mobile device
-            supabase
-                .channel(`session-${data.id}`)
-                .on("postgres_changes", { event: "UPDATE", schema: "public", table: "verification_sessions", filter: `id=eq.${data.id}` },
-                    (payload) => {
-                        setStatus(payload.new.status);
-                    })
-                .subscribe();
+            if (error) throw error;
+
+            if (data && data.id) {
+                // Navigate to the session page
+                router.push(`/kyc/${data.id}`);
+            }
+        } catch (err) {
+            console.error("Error creating session:", err);
+            alert("Failed to start verification. Please try again.");
+            setLoading(false);
         }
-        initSession();
-    }, []);
-
-    if (!sessionId) return <p>Loading secure session...</p>;
-
-    // The mobile URL triggers the mobile flow
-    const mobileUrl = `https://custom-kyc-system.vercel.app/kyc/mobile/${sessionId}`;
+    };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-            <div className="bg-white p-10 rounded-xl shadow-lg text-center">
-                {status === "waiting" && (
-                    <>
-                        <h1 className="text-2xl font-bold mb-4">Scan to Verify</h1>
-                        <div className="bg-white p-4 inline-block">
-                            <QRCode value={mobileUrl} />
-                        </div>
-                        <p className="mt-4 text-gray-500">Please scan this with your mobile phone.</p>
-                    </>
-                )}
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="bg-white p-12 rounded-3xl shadow-lg text-center max-w-lg w-full border border-gray-200"
+            >
+                <h1 className="text-4xl font-bold mb-8 text-foreground">Verification</h1>
 
-                {status === "processing" && <h2 className="text-blue-600 text-xl animate-pulse">Verifying Identity...</h2>}
+                <p className="text-primary font-medium text-lg mb-12">
+                    Verify your identity to sell your available property
+                </p>
 
-                {status === "success" && (
-                    <div className="text-green-600">
-                        <h2 className="text-3xl font-bold">Verified! ✅</h2>
-                        <p>You may now proceed.</p>
-                    </div>
-                )}
-
-                {status === "failed" && (
-                    <div className="text-red-600">
-                        <h2 className="text-3xl font-bold">Verification Failed ❌</h2>
-                        <p>Face did not match ID card.</p>
-                    </div>
-                )}
-            </div>
+                <button
+                    onClick={startVerification}
+                    disabled={loading}
+                    className="theme-btn text-lg py-4 shadow-sm transition-transform hover:scale-105 active:scale-95"
+                >
+                    {loading ? (
+                        <motion.span
+                            animate={{ 
+                                x: [0, -4, 4, -4, 0],
+                                y: [0, -1, 0, -1, 0]
+                            }}
+                            transition={{
+                                duration: 0.45,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            Starting...
+                        </motion.span>
+                    ) : (
+                        "Start Verification"
+                    )}
+                </button>
+            </motion.div>
         </div>
     );
 }
