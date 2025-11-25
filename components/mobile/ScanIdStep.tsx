@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import Image from "next/image";
+import { detectId, cropId } from "@/services/id-verification";
 
 interface ScanIdStepProps {
     onCapture: (file: File) => void;
@@ -22,26 +23,28 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
         const imageSrc = webcamRef.current.getScreenshot();
         if (!imageSrc) return;
 
-        const blob = await (await fetch(imageSrc)).blob()
-        const formData = new FormData();
-        formData.append("image", blob as File);
-        formData.append("sessionId", sessionId)
+        const blob = await (await fetch(imageSrc)).blob();
 
         try {
-            const res = await fetch("/api/detect-id", {
-                method: "POST",
-                body: formData,
-            })
-            const data = await res.json();
+            const data = await detectId(blob);
 
             if (data.success) {
                 setFeedback("ID Captured Successfully!");
                 setIsDetecting(false);
+                let finalBlob = blob;
+                
+                if (data.boundingBox) {
+                    try {
+                        finalBlob = await cropId(blob, data.boundingBox);
+                    } catch (cropError) {
+                        console.error("Cropping request failed", cropError);
+                    }
+                }
 
                 // Create file and preview URL
-                const file = new File([blob], "id-front.jpg", { type: "image/jpeg" });
+                const file = new File([finalBlob], "id-front.jpg", { type: "image/jpeg" });
                 setCapturedFile(file);
-                setPreviewUrl(URL.createObjectURL(blob));
+                setPreviewUrl(URL.createObjectURL(finalBlob));
 
             } else if (data.feedback) {
                 setFeedback(data.feedback);
@@ -49,7 +52,7 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
         } catch (error) {
             console.error("Detection error:", error);
         }
-    }, [isDetecting, sessionId])
+    }, [isDetecting, sessionId]);
 
     useEffect(() => {
         if (isDetecting) {
