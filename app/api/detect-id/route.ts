@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
             console.log(`Face Quality - Sharpness: ${sharpness}, Brightness: ${brightness}`);
 
-            if (sharpness < 85) {
+            if (sharpness < 40) {
                 return NextResponse.json({ success: false, feedback: "Image is blurry"})
             }
 
