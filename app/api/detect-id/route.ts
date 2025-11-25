@@ -33,11 +33,17 @@ export async function POST(req: NextRequest) {
         const labelCommand = new DetectLabelsCommand({
             Image: { Bytes: buffer },
             MaxLabels: 5,
-            MinConfidence: 96
+            MinConfidence: 95
         });
 
         const labelResponse = await rekognition.send(labelCommand);
-        const validLabels = ["ID Card", "Passport", "Driving License", "Document", "Identity Document"];
+
+        // console.log("--- Detected Labels ---");
+        // labelResponse.Labels?.forEach(label => {
+        //     console.log(`Label: ${label.Name}, Confidence: ${label.Confidence}`);
+        // });
+
+        const validLabels = ["ID Cards", "Passport", "Driving License", "Document", "Identity Document"];
 
         const idLabel = labelResponse.Labels?.find(l => validLabels.includes(l.Name || ""));
 
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
             console.log(`Face Quality - Sharpness: ${sharpness}, Brightness: ${brightness}`);
 
             if (sharpness < 85) {
-                return NextResponse.json({ success: false, feedback: "Image is blurry"})
+                return NextResponse.json({ success: false, feedback: "Image is blurry" })
             }
 
             if (brightness < 40) {
