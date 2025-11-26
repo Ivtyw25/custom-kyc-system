@@ -7,12 +7,7 @@ import { IntroStep } from "@/components/mobile/IntroStep";
 import { ScanIdStep } from "@/components/mobile/ScanIdStep";
 import { UploadingStep } from "@/components/mobile/UploadingStep";
 import { CompleteStep } from "@/components/mobile/CompleteStep";
-import dynamic from 'next/dynamic';
-
-const ScanSelfieStep = dynamic(
-    () => import('@/components/mobile/ScanSelfieStep').then((mod) => mod.ScanSelfieStep),
-    { ssr: false }
-);
+import { ScanSelfieStep } from "@/components/mobile/ScanSelfieStep";
 
 interface Files {
     idFront?: File;

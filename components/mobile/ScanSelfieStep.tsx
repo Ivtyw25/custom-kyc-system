@@ -2,13 +2,23 @@
 import { useState } from 'react';
 import { FaceLivenessDetectorCore } from '@aws-amplify/ui-react-liveness';
 import { Loader2 } from 'lucide-react';
-import { ThemeProvider, Theme } from '@aws-amplify/ui-react';
+import { ThemeProvider } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import { Amplify } from 'aws-amplify';
 
 interface ScanSelfieStepProps {
     onCapture: (file: File) => void;
     sessionId: string;
 }
+
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      identityPoolId:process.env.AWS_IDENTITY_POOL_ID || "", 
+      allowGuestAccess: true, 
+    },
+  },
+});
 
 export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
     const [loading, setLoading] = useState(false);
@@ -52,19 +62,8 @@ export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
         }
     };
 
-    const theme: Theme = {
-        name: 'my-theme',
-        tokens: {
-            colors: {
-                background: {
-                    primary: { value: '#ffffff' }
-                }
-            }
-        }
-    };
-
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider>
             <div className="w-full h-full flex flex-col items-center justify-center min-h-[400px]">
                 {error ? (
                     <div className="text-center space-y-4">
@@ -90,23 +89,6 @@ export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
                                 onError={(err: any) => {
                                     setError(err.message || "An error occurred");
                                     setLivenessSessionID(null);
-                                }}
-                                config={{
-                                    credentialProvider: async () => {
-                                        const res = await fetch("/api/auth/liveness-credentials");
-                                        const data = await res.json();
-
-                                        if (!res.ok) {
-                                            throw new Error(data.error || "Failed to get credentials");
-                                        }
-
-                                        return {
-                                            accessKeyId: data.accessKeyId,
-                                            secretAccessKey: data.secretAccessKey,
-                                            sessionToken: data.sessionToken,
-                                            expiration: new Date(data.expiration)
-                                        };
-                                    }
                                 }}
                             />
                         ) : (
