@@ -8,14 +8,7 @@ import { ScanIdStep } from "@/components/mobile/ScanIdStep";
 import { UploadingStep } from "@/components/mobile/UploadingStep";
 import { CompleteStep } from "@/components/mobile/CompleteStep";
 import { ScanSelfieStep } from "@/components/mobile/ScanSelfieStep";
-
-interface Files {
-    idFront?: File;
-    idBack?: File;
-    selfie?: File;
-}
-
-type Step = "intro" | "scan-id-front" | "scan-id-back" | "scan-selfie" | "uploading" | "complete";
+import { Files, Step } from "@/types";
 
 export default function MobileCapture() {
     const params = useParams();

@@ -3,12 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import Image from "next/image";
 import { detectId, cropId } from "@/services/id-verification";
-
-interface ScanIdStepProps {
-    onCapture: (file: File) => void;
-    sessionId: string;
-    side: "front" | "back";
-}
+import { ScanIdStepProps } from "@/types";
 
 export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const webcamRef = useRef<Webcam>(null);
@@ -59,9 +54,8 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
         if (isDetecting) {
             const interval = setInterval(() => { analyzeFrame(); }, 3000);
             setScanInterval(interval);
-        } else {
+        } else
             if (scanInterval) clearInterval(scanInterval);
-        }
         return () => {
             if (scanInterval) clearInterval(scanInterval);
         }

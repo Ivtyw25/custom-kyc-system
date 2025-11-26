@@ -1,8 +1,6 @@
 import { IdCard } from "lucide-react";
 
-interface IntroStepProps {
-    onNext: () => void;
-}
+import { IntroStepProps } from "@/types";
 
 export function IntroStep({ onNext }: IntroStepProps) {
     return (

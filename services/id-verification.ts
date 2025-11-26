@@ -10,7 +10,14 @@ export async function detectId(imageBlob: Blob, side: "front" | "back") {
     return res.json();
 }
 
-export async function cropId(imageBlob: Blob, boundingBox: any) {
+interface BoundingBox {
+    Left: number;
+    Top: number;
+    Width: number;
+    Height: number;
+}
+
+export async function cropId(imageBlob: Blob, boundingBox: BoundingBox) {
     const formData = new FormData();
     formData.append("image", imageBlob);
     formData.append("boundingBox", JSON.stringify(boundingBox));

@@ -1,6 +1,13 @@
 import sharp from "sharp";
 
-export async function cropImage(buffer: Buffer, box: any) {
+interface BoundingBox {
+    Left: number;
+    Top: number;
+    Width: number;
+    Height: number;
+}
+
+export async function cropImage(buffer: Buffer, box: BoundingBox) {
     const metadata = await sharp(buffer).metadata();
     const width = metadata.width || 0;
     const height = metadata.height || 0;

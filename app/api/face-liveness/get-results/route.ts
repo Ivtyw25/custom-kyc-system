@@ -1,6 +1,6 @@
 import { GetFaceLivenessSessionResultsCommand } from "@aws-sdk/client-rekognition";
 import { NextRequest, NextResponse } from "next/server";
-import { rekognitionClient } from "@/lib/aws-rekognition";
+import { rekognitionClient } from "@/lib/aws/clients";
 
 export async function POST(req: NextRequest) {
     try {
@@ -25,8 +25,9 @@ export async function POST(req: NextRequest) {
             auditImages: response.AuditImages
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error getting liveness results:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

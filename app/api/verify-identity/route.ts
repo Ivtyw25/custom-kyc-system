@@ -1,32 +1,20 @@
 import { RekognitionClient, CompareFacesCommand } from "@aws-sdk/client-rekognition";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { rekognitionClient } from "@/lib/aws/clients";
 
-const region = process.env.NEXT_PUBLIC_AWS_REGION;
-const accessKeyId = process.env.MY_AWS_ACCESS_KEY;
-const secretAccessKey = process.env.MY_AWS_SECRET_ACCESS_KEY;
 const supabase_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabase_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const bucketName = process.env.AWS_S3_BUCKET;
 
-if (!region || !accessKeyId || !secretAccessKey || !supabase_url || !supabase_anon_key || !bucketName) {
+if (!supabase_url || !supabase_anon_key || !bucketName) {
     console.error("Missing configuration:", {
-        region,
-        accessKeyId: accessKeyId ? accessKeyId.substring(0, 5) + "..." : undefined,
-        hasSecret: !!secretAccessKey,
+        hasSupabaseUrl: !!supabase_url,
+        hasSupabaseKey: !!supabase_anon_key,
         bucketName
     });
     throw new Error("Missing AWS configuration or Supabase configuration");
 }
-
-const rekognition = new RekognitionClient({
-    region: region,
-    credentials: {
-        accessKeyId: accessKeyId,
-        secretAccessKey: secretAccessKey
-    }
-});
-
 
 const supabase = createClient(supabase_url, supabase_anon_key);
 
@@ -37,14 +25,12 @@ export async function POST(req: NextRequest) {
         console.log("Verify Identity Request:", { sessionId, idFrontKey, selfieKey });
 
         // Validate all required parameters
-        if (!bucketName || !idFrontKey || !selfieKey || !region) {
+        if (!bucketName || !idFrontKey || !selfieKey) {
             console.error("Missing required parameters:", {
                 hasBucketName: !!bucketName,
                 hasIdFrontKey: !!idFrontKey,
                 hasSelfieKey: !!selfieKey,
-                hasRegion: !!region,
                 bucketName,
-                region
             });
             return NextResponse.json({
                 success: false,
@@ -63,7 +49,7 @@ export async function POST(req: NextRequest) {
         const command = new CompareFacesCommand(rekognitionParams);
 
         console.log("Sending Rekognition Command...");
-        const response = await rekognition.send(command);
+        const response = await rekognitionClient.send(command);
         console.log("Rekognition Response:", JSON.stringify(response, null, 2));
 
         const match = response.FaceMatches && response.FaceMatches.length > 0;
@@ -84,17 +70,17 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ success: true, confidence });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("=== VERIFY IDENTITY ERROR ===");
-        console.error("Error Type:", error.constructor.name);
-        console.error("Error Message:", error.message);
-        console.error("Error Stack:", error.stack);
-        console.error("Full Error:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+        const err = error instanceof Error ? error : new Error(String(error));
+        console.error("Error Type:", err.constructor.name);
+        console.error("Error Message:", err.message);
+        console.error("Error Stack:", err.stack);
 
         return NextResponse.json({
             success: false,
-            error: error.message,
-            errorType: error.constructor.name
+            error: err.message,
+            errorType: err.constructor.name
         }, { status: 500 });
     }
 }

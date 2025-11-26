@@ -1,5 +1,5 @@
 import { DetectLabelsCommand, DetectFacesCommand, DetectTextCommand, TextDetection } from "@aws-sdk/client-rekognition";
-import { rekognitionClient } from "./aws-rekognition";
+import { rekognitionClient } from "./aws/clients";
 
 export async function validateIdLabel(buffer: Buffer) {
     const command = new DetectLabelsCommand({

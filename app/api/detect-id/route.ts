@@ -52,20 +52,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, feedback: "Ensure good lighting and avoid glare." });
 
         let boundingBox;
-        if (idLabel.Instances && idLabel.Instances.length > 0) {
+        if (idLabel.Instances && idLabel.Instances.length > 0)
             boundingBox = idLabel.Instances[0].BoundingBox;
-        } else {
-            // Increase padding to 10% to capture more of the card
+        else
             boundingBox = calculateBoundingBox(clearText, 0.1);
-        }
 
         return NextResponse.json({ success: true, feedback: "ID Detected!", boundingBox });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error detecting ID:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
         return NextResponse.json({
             success: false,
-            error: error.message
+            error: errorMessage
         }, { status: 500 });
     }
 }

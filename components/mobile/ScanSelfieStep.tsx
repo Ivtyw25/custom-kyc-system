@@ -11,10 +11,7 @@ const FaceLivenessDetector = dynamic(
     { ssr: false }
 );
 
-interface ScanSelfieStepProps {
-    onCapture: (file: File) => void;
-    sessionId: string;
-}
+import { ScanSelfieStepProps } from "@/types";
 
 Amplify.configure({
     Auth: {
@@ -91,8 +88,9 @@ export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
                                     setError("User cancelled the check.");
                                     setLivenessSessionID(null);
                                 }}
-                                onError={(err: any) => {
-                                    setError(err.message || "An error occurred");
+                                onError={(err: unknown) => {
+                                    const message = err instanceof Error ? err.message : "An error occurred";
+                                    setError(message);
                                     setLivenessSessionID(null);
                                 }}
                             />
@@ -103,7 +101,7 @@ export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
                                         setLoading(true);
                                         try {
                                             await fetchCreateLiveness();
-                                        } catch (e) {
+                                        } catch {
                                             setError("Failed to start session");
                                         } finally {
                                             setLoading(false);

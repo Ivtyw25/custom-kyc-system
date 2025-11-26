@@ -20,15 +20,12 @@ export default function DesktopKYC() {
     const startVerification = async () => {
         setLoading(true);
         try {
-            // Create a new session
             const { data, error } = await supabase.from("verification_sessions").insert({}).select().single();
 
             if (error) throw error;
 
-            if (data && data.id) {
-                // Navigate to the session page
+            if (data && data.id)
                 router.push(`/kyc/${data.id}`);
-            }
         } catch (err) {
             console.error("Error creating session:", err);
             alert("Failed to start verification. Please try again.");

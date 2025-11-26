@@ -1,6 +1,6 @@
 import { CreateFaceLivenessSessionCommand } from "@aws-sdk/client-rekognition";
 import { NextRequest, NextResponse } from "next/server";
-import { rekognitionClient } from "@/lib/aws-rekognition";
+import { rekognitionClient } from "@/lib/aws/clients";
 
 export async function POST(req: NextRequest) {
     try {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
             ClientRequestToken: sessionId,
             Settings: {
                 OutputConfig: {
-                    S3Bucket: process.env.AWS_S3_BUCKET_NAME || "",
+                    S3Bucket: process.env.AWS_S3_BUCKET || "",
                     S3KeyPrefix: `${sessionId}/selfie.jpg`
                 },
                 AuditImagesLimit: 1
@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
             sessionId: response.SessionId
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error creating liveness session:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
