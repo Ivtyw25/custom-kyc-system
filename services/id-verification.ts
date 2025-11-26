@@ -1,6 +1,7 @@
-export async function detectId(imageBlob: Blob) {
+export async function detectId(imageBlob: Blob, side: "front" | "back") {
     const formData = new FormData();
     formData.append("image", imageBlob);
+    formData.append("side", side);
 
     const res = await fetch("/api/detect-id", {
         method: "POST",

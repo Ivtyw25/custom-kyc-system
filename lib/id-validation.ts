@@ -29,7 +29,7 @@ export async function checkTextClarity(buffer: Buffer) {
     return response.TextDetections || [];
 }
 
-export function calculateBoundingBox(textDetections: TextDetection[]) {
+export function calculateBoundingBox(textDetections: TextDetection[], padding = 0.05) {
     if (textDetections.length === 0) return null;
 
     let minLeft = 1.0;
@@ -47,7 +47,6 @@ export function calculateBoundingBox(textDetections: TextDetection[]) {
         }
     });
 
-    const padding = 0.05;
     minLeft = Math.max(0, minLeft - padding);
     minTop = Math.max(0, minTop - padding);
     maxRight = Math.min(1, maxRight + padding);

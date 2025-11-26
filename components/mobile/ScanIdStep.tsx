@@ -27,7 +27,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
         const blob = await (await fetch(imageSrc)).blob();
 
         try {
-            const data = await detectId(blob);
+            const data = await detectId(blob, side);
 
             if (data.success) {
                 setFeedback("ID Captured Successfully!");
@@ -41,7 +41,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
                         console.error("Cropping request failed", cropError);
                     }
                 }
-                
+
                 const fileName = `id-${side}.jpg`;
                 const file = new File([finalBlob], fileName, { type: "image/jpeg" });
                 setCapturedFile(file);

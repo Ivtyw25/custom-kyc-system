@@ -1,16 +1,15 @@
 "use client";
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
+import { ThemeProvider } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+import { Amplify } from 'aws-amplify';
 
 const FaceLivenessDetector = dynamic(
     () => import('@aws-amplify/ui-react-liveness').then((mod) => mod.FaceLivenessDetector),
     { ssr: false }
 );
-
-import { Loader2 } from 'lucide-react';
-import { ThemeProvider } from '@aws-amplify/ui-react';
-import '@aws-amplify/ui-react/styles.css';
-import { Amplify } from 'aws-amplify';
 
 interface ScanSelfieStepProps {
     onCapture: (file: File) => void;

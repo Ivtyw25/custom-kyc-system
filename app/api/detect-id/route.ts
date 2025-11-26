@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
         const image = formData.get("image");
+        const side = formData.get("side") as string || "front";
 
         if (!image || typeof image === "string") {
             return NextResponse.json({ success: false, error: "No image provided" }, { status: 400 });
@@ -22,20 +23,22 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, feedback: "Move your ID into view" });
         }
 
-        const face = await checkFaceQuality(buffer);
+        if (side !== "back") {
+            const face = await checkFaceQuality(buffer);
 
-        if (face) {
-            const sharpness = face.Quality?.Sharpness || 0;
-            const brightness = face.Quality?.Brightness || 0;
+            if (face) {
+                const sharpness = face.Quality?.Sharpness || 0;
+                const brightness = face.Quality?.Brightness || 0;
 
-            console.log(`Face Quality - Sharpness: ${sharpness}, Brightness: ${brightness}`);
+                console.log(`Face Quality - Sharpness: ${sharpness}, Brightness: ${brightness}`);
 
-            if (sharpness < 4.5)
-                return NextResponse.json({ success: false, feedback: "Image is blurry" })
-            if (brightness < 40)
-                return NextResponse.json({ success: false, feedback: "Too dark" });
-            if (brightness > 95)
-                return NextResponse.json({ success: false, feedback: "Too bright." });
+                if (sharpness < 4.5)
+                    return NextResponse.json({ success: false, feedback: "Image is blurry" })
+                if (brightness < 40)
+                    return NextResponse.json({ success: false, feedback: "Too dark" });
+                if (brightness > 95)
+                    return NextResponse.json({ success: false, feedback: "Too bright." });
+            }
         }
 
         const textDetections = await checkTextClarity(buffer);
@@ -48,7 +51,13 @@ export async function POST(req: NextRequest) {
         if (avgConfidence < 95)
             return NextResponse.json({ success: false, feedback: "Ensure good lighting and avoid glare." });
 
-        const boundingBox = calculateBoundingBox(clearText);
+        let boundingBox;
+        if (idLabel.Instances && idLabel.Instances.length > 0) {
+            boundingBox = idLabel.Instances[0].BoundingBox;
+        } else {
+            // Increase padding to 10% to capture more of the card
+            boundingBox = calculateBoundingBox(clearText, 0.1);
+        }
 
         return NextResponse.json({ success: true, feedback: "ID Detected!", boundingBox });
 
