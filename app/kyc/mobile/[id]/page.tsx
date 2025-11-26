@@ -5,9 +5,14 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { IntroStep } from "@/components/mobile/IntroStep";
 import { ScanIdStep } from "@/components/mobile/ScanIdStep";
-import { ScanSelfieStep } from "@/components/mobile/ScanSelfieStep";
 import { UploadingStep } from "@/components/mobile/UploadingStep";
 import { CompleteStep } from "@/components/mobile/CompleteStep";
+import dynamic from 'next/dynamic';
+
+const ScanSelfieStep = dynamic(
+    () => import('@/components/mobile/ScanSelfieStep').then((mod) => mod.ScanSelfieStep),
+    { ssr: false }
+);
 
 interface Files {
     idFront?: File;
@@ -33,18 +38,6 @@ export default function MobileCapture() {
             setFiles(prev => ({ ...prev, idBack: file }));
             setStep("scan-selfie");
             setProgress(75);
-        }
-    };
-
-    const handleSelfieCaptured = () => {
-        const updatedFiles = { ...files, selfie: file };
-        setFiles(updatedFiles);
-
-        if (updatedFiles.idFront && updatedFiles.idBack) {
-            uploadAndVerify(updatedFiles.idFront, updatedFiles.idBack, file);
-        } else {
-            console.error("ID Front, Back or Selfie not captured");
-            setStep("intro");
         }
     };
 
@@ -84,6 +77,18 @@ export default function MobileCapture() {
             alert("Error uploading images");
             console.error(err);
             setStep("intro"); // Reset on error
+        }
+    };
+
+    const handleSelfieCaptured = (file: File) => {
+        const updatedFiles = { ...files, selfie: file };
+        setFiles(updatedFiles);
+
+        if (updatedFiles.idFront && updatedFiles.idBack) {
+            uploadAndVerify(updatedFiles.idFront, updatedFiles.idBack, file);
+        } else {
+            console.error("ID Front, Back or Selfie not captured");
+            setStep("intro");
         }
     };
 
