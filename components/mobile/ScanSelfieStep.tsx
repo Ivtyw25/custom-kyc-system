@@ -1,6 +1,12 @@
 "use client";
 import { useState } from 'react';
-import { FaceLivenessDetectorCore } from '@aws-amplify/ui-react-liveness';
+import dynamic from 'next/dynamic';
+
+const FaceLivenessDetector = dynamic(
+    () => import('@aws-amplify/ui-react-liveness').then((mod) => mod.FaceLivenessDetector),
+    { ssr: false }
+);
+
 import { Loader2 } from 'lucide-react';
 import { ThemeProvider } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
@@ -12,12 +18,12 @@ interface ScanSelfieStepProps {
 }
 
 Amplify.configure({
-  Auth: {
-    Cognito: {
-      identityPoolId:process.env.AWS_IDENTITY_POOL_ID || "", 
-      allowGuestAccess: true, 
+    Auth: {
+        Cognito: {
+            identityPoolId: process.env.NEXT_PUBLIC_AWS_IDENTITY_POOL_ID || process.env.AWS_IDENTITY_POOL || "",
+            allowGuestAccess: true,
+        },
     },
-  },
 });
 
 export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
@@ -78,9 +84,9 @@ export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
                 ) : (
                     <div className="w-full max-w-md h-[500px] relative bg-gray-100 rounded-xl overflow-hidden">
                         {livenessSessionId ? (
-                            <FaceLivenessDetectorCore
+                            <FaceLivenessDetector
                                 sessionId={livenessSessionId}
-                                region={process.env.AWS_REGION || "ap-southeast-1"}
+                                region={process.env.NEXT_PUBLIC_AWS_REGION || "ap-southeast-1"}
                                 onAnalysisComplete={handleAnalysisComplete}
                                 onUserCancel={() => {
                                     setError("User cancelled the check.");

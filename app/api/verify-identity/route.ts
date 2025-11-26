@@ -2,7 +2,7 @@ import { RekognitionClient, CompareFacesCommand } from "@aws-sdk/client-rekognit
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-const region = process.env.AWS_REGION;
+const region = process.env.NEXT_PUBLIC_AWS_REGION;
 const accessKeyId = process.env.MY_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.MY_AWS_SECRET_ACCESS_KEY;
 const supabase_url = process.env.NEXT_PUBLIC_SUPABASE_URL;

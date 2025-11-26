@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 
+import path from "path";
+
 const nextConfig: NextConfig = {
+  transpilePackages: [
+    '@tensorflow-models/face-detection',
+    '@mediapipe/face_detection',
+    '@aws-amplify/ui-react-liveness',
+  ],
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@mediapipe/face_detection': path.resolve(process.cwd(), 'lib/mediapipe-shim.js'),
+    };
+    return config;
+  },
   async headers() {
     return [
       {

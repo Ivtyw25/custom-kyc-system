@@ -1,12 +1,12 @@
 import { STSClient, AssumeRoleCommand } from "@aws-sdk/client-sts";
 import { NextRequest, NextResponse } from "next/server";
 
-const region = process.env.AWS_REGION;
+const region = process.env.NEXT_PUBLIC_AWS_REGION;
 const accessKeyId = process.env.MY_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.MY_AWS_SECRET_ACCESS_KEY;
 
 if (!region || !accessKeyId || !secretAccessKey) {
-    throw new Error("Missing AWS credentials (AWS_REGION, MY_AWS_ACCESS_KEY, MY_AWS_SECRET_ACCESS_KEY)");
+    throw new Error("Missing AWS credentials (NEXT_PUBLIC_AWS_REGION, MY_AWS_ACCESS_KEY, MY_AWS_SECRET_ACCESS_KEY)");
 }
 
 const stsClient = new STSClient({
