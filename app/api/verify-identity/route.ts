@@ -1,5 +1,4 @@
 import { RekognitionClient, CompareFacesCommand } from "@aws-sdk/client-rekognition";
-import { S3Client, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 

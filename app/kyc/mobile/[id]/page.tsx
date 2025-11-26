@@ -11,10 +11,11 @@ import { CompleteStep } from "@/components/mobile/CompleteStep";
 
 interface Files {
     idFront?: File;
+    idBack?: File;
     selfie?: File;
 }
 
-type Step = "intro" | "scan-id-front" | "scan-selfie" | "uploading" | "complete";
+type Step = "intro" | "scan-id-front" | "scan-id-back" | "scan-selfie" | "uploading" | "complete";
 
 export default function MobileCapture() {
     const params = useParams();
@@ -24,24 +25,32 @@ export default function MobileCapture() {
     const [progress, setProgress] = useState(0);
 
     const handleIdCaptured = (file: File) => {
-        setFiles(prev => ({ ...prev, idFront: file }));
-        setStep("scan-selfie");
-        setProgress(50);
+        if (step === "scan-id-front") {
+            setFiles(prev => ({ ...prev, idFront: file }));
+            setStep("scan-id-back");
+            setProgress(50);
+        } else if (step === "scan-id-back") {
+            setFiles(prev => ({ ...prev, idBack: file }));
+            setStep("scan-selfie");
+            setProgress(75);
+        }
     };
 
-    const handleSelfieCaptured = (file: File) => {
-        setFiles(prev => ({ ...prev, selfie: file }));
-        if (files.idFront) {
-            uploadAndVerify(files.idFront, file);
+    const handleSelfieCaptured = () => {
+        const updatedFiles = { ...files, selfie: file };
+        setFiles(updatedFiles);
+
+        if (updatedFiles.idFront && updatedFiles.idBack) {
+            uploadAndVerify(updatedFiles.idFront, updatedFiles.idBack, file);
         } else {
-            console.error("ID Front missing during selfie capture");
+            console.error("ID Front, Back or Selfie not captured");
             setStep("intro");
         }
     };
 
-    const uploadAndVerify = async (idFront: File, selfie: File) => {
+    const uploadAndVerify = async (idFront: File, idBack: File, selfie: File) => {
         setStep("uploading");
-        setProgress(75);
+        setProgress(90);
 
         const uploadFile = async (file: File, prefix: string) => {
             const fileName = `${sessionId}/${prefix}.${file.type.split("/")[1]}`;
@@ -55,12 +64,18 @@ export default function MobileCapture() {
         };
 
         try {
-            const idKey = await uploadFile(idFront, "id-front");
+            const idFrontKey = await uploadFile(idFront, "id-front");
+            const idBackKey = await uploadFile(idBack, "id-back");
             const selfieKey = await uploadFile(selfie, "selfie");
 
             await fetch("/api/verify-identity", {
                 method: "POST",
-                body: JSON.stringify({ sessionId, idFrontKey: idKey, selfieKey }),
+                body: JSON.stringify({
+                    sessionId,
+                    idFrontKey,
+                    idBackKey,
+                    selfieKey
+                }),
             });
 
             setStep("complete");
@@ -94,11 +109,15 @@ export default function MobileCapture() {
                 )}
 
                 {step === "scan-id-front" && (
-                    <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} />
+                    <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} side="front" />
+                )}
+
+                {step === "scan-id-back" && (
+                    <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} side="back" />
                 )}
 
                 {step === "scan-selfie" && (
-                    <ScanSelfieStep onCapture={handleSelfieCaptured} />
+                    <ScanSelfieStep onCapture={handleSelfieCaptured} sessionId={sessionId} />
                 )}
 
                 {step === "uploading" && (

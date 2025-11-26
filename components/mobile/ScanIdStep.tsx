@@ -7,12 +7,13 @@ import { detectId, cropId } from "@/services/id-verification";
 interface ScanIdStepProps {
     onCapture: (file: File) => void;
     sessionId: string;
+    side: "front" | "back";
 }
 
-export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
+export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const webcamRef = useRef<Webcam>(null);
     const [isDetecting, setIsDetecting] = useState(true);
-    const [feedback, setFeedback] = useState("Move your ID into View");
+    const [feedback, setFeedback] = useState(`Move your ID (${side}) into View`);
     const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
     const [capturedFile, setCapturedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
                 setFeedback("ID Captured Successfully!");
                 setIsDetecting(false);
                 let finalBlob = blob;
-                
+
                 if (data.boundingBox) {
                     try {
                         finalBlob = await cropId(blob, data.boundingBox);
@@ -40,9 +41,9 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
                         console.error("Cropping request failed", cropError);
                     }
                 }
-
-                // Create file and preview URL
-                const file = new File([finalBlob], "id-front.jpg", { type: "image/jpeg" });
+                
+                const fileName = `id-${side}.jpg`;
+                const file = new File([finalBlob], fileName, { type: "image/jpeg" });
                 setCapturedFile(file);
                 setPreviewUrl(URL.createObjectURL(finalBlob));
 
@@ -52,7 +53,7 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
         } catch (error) {
             console.error("Detection error:", error);
         }
-    }, [isDetecting, sessionId]);
+    }, [isDetecting, sessionId, side]);
 
     useEffect(() => {
         if (isDetecting) {
@@ -69,47 +70,40 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
     const handleRetake = () => {
         setCapturedFile(null);
         setPreviewUrl(null);
-        setFeedback("Move your ID into View");
+        setFeedback(`Move your ID (${side}) into View`);
         setIsDetecting(true);
     };
 
     const handleSubmit = () => {
-        if (capturedFile) {
+        if (capturedFile)
             onCapture(capturedFile);
-        }
     };
 
-    // Review UI
     if (capturedFile && previewUrl) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-500">
                 <div className="w-full max-w-md space-y-6 text-center">
                     <div className="space-y-2">
-                        <h3 className="text-2xl font-bold text-gray-900">Review front of ID</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 capitalize">Review {side} of ID</h3>
                         <p className="text-gray-500 text-sm">
                             Check that your details are visible and in focus
                         </p>
                     </div>
 
-                    <div className="relative w-full aspect-3/4 bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
-                        <Image
-                            src={previewUrl}
-                            alt="Captured ID"
-                            fill
-                            className="object-cover"
-                        />
+                    <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
+                        <Image src={previewUrl} alt={`Captured ID ${side}`} fill className="object-contain" priority />
                     </div>
 
                     <div className="space-y-3 pt-4">
                         <button
                             onClick={handleSubmit}
-                            className="w-full py-3.5 bg-[#FF8A00] text-white font-semibold rounded-lg shadow-md hover:bg-[#E67A00] transition-colors active:scale-[0.98]"
+                            className="w-full py-3.5 bg-[#FF8A00] text-white font-semibold rounded-lg shadow-md hover:bg-[#E67A00] transition-colors active:scale-95"
                         >
                             Submit Photo
                         </button>
                         <button
                             onClick={handleRetake}
-                            className="w-full py-3.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors active:scale-[0.98]"
+                            className="w-full py-3.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors active:scale-95"
                         >
                             Retake Photo
                         </button>
@@ -122,13 +116,7 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
     return (
         <div className="w-full h-full flex flex-col items-center relative animate-in fade-in duration-500">
             <div className="relative w-full aspect-3/4 max-w-md bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500 shadow-xl">
-                <Webcam
-                    ref={webcamRef}
-                    audio={false}
-                    screenshotFormat="image/jpeg"
-                    videoConstraints={{ facingMode: "environment" }}
-                    className="w-full h-full object-cover"
-                />
+                <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "environment" }} className="w-full h-full object-cover" />
 
                 {/* Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -143,7 +131,7 @@ export function ScanIdStep({ onCapture, sessionId }: ScanIdStepProps) {
             </div>
 
             <div className="mt-6 space-y-2">
-                <h3 className="font-bold text-lg">Front of ID</h3>
+                <h3 className="font-bold text-lg capitalize">{side} of ID</h3>
                 <p className="text-gray-500 text-sm max-w-xs mx-auto">
                     Place on a flat surface in a well-lit area and we'll take the photo automatically
                 </p>

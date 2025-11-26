@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
         const avgConfidence = clearText.reduce((acc, curr) => acc + (curr.Confidence || 0), 0) / clearText.length;
 
-        if (avgConfidence < 96)
+        if (avgConfidence < 95)
             return NextResponse.json({ success: false, feedback: "Ensure good lighting and avoid glare." });
 
         const boundingBox = calculateBoundingBox(clearText);
