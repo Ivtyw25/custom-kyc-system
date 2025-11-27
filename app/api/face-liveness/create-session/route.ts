@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
             ClientRequestToken: sessionId,
             Settings: {
                 OutputConfig: {
-                    S3Bucket: process.env.AWS_S3_BUCKET || "",
-                    S3KeyPrefix: `${sessionId}/selfie.jpg`
+                    S3Bucket: process.env.AWS_S3_BUCKET,    
+                    S3KeyPrefix: `${sessionId}`
                 },
                 AuditImagesLimit: 1
             }
@@ -28,9 +28,13 @@ export async function POST(req: NextRequest) {
             sessionId: response.SessionId
         });
 
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.error("Error creating liveness session:", error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return NextResponse.json({
+            error: errorMessage,
+            code: error.name,
+            requestId: error.$metadata?.requestId
+        }, { status: 500 });
     }
 }
