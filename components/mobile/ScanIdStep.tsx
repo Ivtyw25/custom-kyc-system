@@ -59,6 +59,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
         return () => {
             if (scanInterval) clearInterval(scanInterval);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDetecting, analyzeFrame]);
 
     const handleRetake = () => {
@@ -127,7 +128,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
             <div className="mt-6 space-y-2">
                 <h3 className="font-bold text-lg capitalize">{side} of ID</h3>
                 <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                    Place on a flat surface in a well-lit area and we'll take the photo automatically
+                    Place on a flat surface in a well-lit area and we&apos;ll take the photo automatically
                 </p>
             </div>
         </div>

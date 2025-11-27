@@ -1,4 +1,4 @@
-import { RekognitionClient, CompareFacesCommand } from "@aws-sdk/client-rekognition";
+import { CompareFacesCommand } from "@aws-sdk/client-rekognition";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { rekognitionClient } from "@/lib/aws/clients";
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
         // 2. Update Supabase (Desktop will see this instantly via Realtime)
         console.log("Updating Supabase...");
-        const supabaseResult = await supabase
+        await supabase
             .from('verification_sessions')
             .update({
                 status: isVerified ? 'success' : 'failed',

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         }
 
         const buffer = Buffer.from(await image.arrayBuffer());
-        const idLabel = await validateIdLabel(buffer);
+        const idLabel = await validateIdLabel(buffer, side as "front" | "back");
 
         if (!idLabel) {
             return NextResponse.json({ success: false, feedback: "Move your ID into view" });
@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: false, feedback: "Ensure good lighting and avoid glare." });
 
         let boundingBox;
-        if (idLabel.Instances && idLabel.Instances.length > 0)
-            boundingBox = idLabel.Instances[0].BoundingBox;
+        if (idLabel.Geometry && idLabel.Geometry.BoundingBox)
+            boundingBox = idLabel.Geometry.BoundingBox;
         else
             boundingBox = calculateBoundingBox(clearText, 0.1);
 

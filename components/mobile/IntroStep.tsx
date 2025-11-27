@@ -10,7 +10,7 @@ export function IntroStep({ onNext }: IntroStepProps) {
             </h1>
 
             <p className="text-gray-600 text-lg">
-                You must scan your driver's license, passport or government-issued photo ID
+                You must scan your driver&apos;s license, passport or government-issued photo ID
             </p>
 
             <div className="py-12 flex justify-center">
@@ -23,7 +23,7 @@ export function IntroStep({ onNext }: IntroStepProps) {
                 onClick={onNext}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-xl text-lg transition-all active:scale-95"
             >
-                I'm ready
+                I&apos;m ready
             </button>
         </div>
     );

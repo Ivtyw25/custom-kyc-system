@@ -22,7 +22,7 @@ Amplify.configure({
     },
 });
 
-export function ScanSelfieStep({ onCapture, sessionId }: ScanSelfieStepProps) {
+export function ScanSelfieStep({ sessionId }: ScanSelfieStepProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [livenessSessionId, setLivenessSessionID] = useState<string | null>(null)
