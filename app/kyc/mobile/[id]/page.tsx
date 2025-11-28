@@ -47,7 +47,6 @@ export default function MobileCapture() {
         try {
             const idFrontKey = await uploadFile(idFront, "id-front");
             const idBackKey = await uploadFile(idBack, "id-back");
-            const selfieKey = await uploadFile(selfie, "selfie");
 
             await fetch("/api/verify-identity", {
                 method: "POST",
@@ -55,7 +54,6 @@ export default function MobileCapture() {
                     sessionId,
                     idFrontKey,
                     idBackKey,
-                    selfieKey
                 }),
             });
 
@@ -65,18 +63,6 @@ export default function MobileCapture() {
             alert("Error uploading images");
             console.error(err);
             setStep("intro"); // Reset on error
-        }
-    };
-
-    const handleSelfieCaptured = (file: File) => {
-        const updatedFiles = { ...files, selfie: file };
-        setFiles(updatedFiles);
-
-        if (updatedFiles.idFront && updatedFiles.idBack) {
-            uploadAndVerify(updatedFiles.idFront, updatedFiles.idBack, file);
-        } else {
-            console.error("ID Front, Back or Selfie not captured");
-            setStep("intro");
         }
     };
 
@@ -110,7 +96,7 @@ export default function MobileCapture() {
                 )}
 
                 {step === "scan-selfie" && (
-                    <ScanSelfieStep onCapture={handleSelfieCaptured} sessionId={sessionId} />
+                    <ScanSelfieStep sessionId={sessionId} />
                 )}
 
                 {step === "uploading" && (

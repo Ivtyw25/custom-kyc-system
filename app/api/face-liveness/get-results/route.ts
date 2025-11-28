@@ -1,28 +1,27 @@
 import { GetFaceLivenessSessionResultsCommand } from "@aws-sdk/client-rekognition";
 import { NextRequest, NextResponse } from "next/server";
-import { rekognitionClient } from "@/lib/aws/clients";
+import { rekognitionLivenessClient } from "@/lib/aws/clients";
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { sessionId } = body;
+        const { livenessSessionId } = body;
 
-        if (!sessionId) {
+        if (!livenessSessionId) {
             return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
         }
 
         const command = new GetFaceLivenessSessionResultsCommand({
-            SessionId: sessionId
+            SessionId: livenessSessionId
         });
 
-        const response = await rekognitionClient.send(command);
-        const isLive = response.Confidence && response.Confidence > 90;
+        const response = await rekognitionLivenessClient.send(command);
+        const isLive = response.Confidence && response.Confidence > 75;
 
         return NextResponse.json({
             isLive,
             confidence: response.Confidence,
             status: response.Status,
-            auditImages: response.AuditImages
         });
 
     } catch (error: unknown) {

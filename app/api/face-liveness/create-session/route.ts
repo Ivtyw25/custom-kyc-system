@@ -1,6 +1,6 @@
 import { CreateFaceLivenessSessionCommand } from "@aws-sdk/client-rekognition";
 import { NextRequest, NextResponse } from "next/server";
-import { rekognitionClient } from "@/lib/aws/clients";
+import { rekognitionLivenessClient } from "@/lib/aws/clients";
 
 export async function POST(req: NextRequest) {
     try {
@@ -11,18 +11,24 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
         }
 
+        const bucketName = process.env.AWS_S3_BUCKET;
+        if (!bucketName) {
+            console.error("AWS_S3_BUCKET is not defined in environment variables");
+            return NextResponse.json({ error: "Server configuration error: Missing S3 Bucket" }, { status: 500 });
+        }
+
         const command = new CreateFaceLivenessSessionCommand({
             ClientRequestToken: sessionId,
             Settings: {
                 OutputConfig: {
-                    S3Bucket: process.env.AWS_S3_BUCKET,    
-                    S3KeyPrefix: `${sessionId}`
+                    S3Bucket: bucketName,
+                    S3KeyPrefix: `${sessionId}/`
                 },
-                AuditImagesLimit: 1
+                AuditImagesLimit: 4
             }
         });
 
-        const response = await rekognitionClient.send(command);
+        const response = await rekognitionLivenessClient.send(command);
 
         return NextResponse.json({
             sessionId: response.SessionId

@@ -2,8 +2,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import Image from "next/image";
-import { detectId, cropId } from "@/services/id-verification";
+import { detectId } from "@/services/id-verification";
 import { ScanIdStepProps } from "@/types";
+import toast from "react-hot-toast";
 
 export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const webcamRef = useRef<Webcam>(null);
@@ -25,22 +26,14 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
             const data = await detectId(blob, side);
 
             if (data.success) {
-                setFeedback("ID Captured Successfully!");
+                toast.success("ID Captured Successfully!");
                 setIsDetecting(false);
-                let finalBlob = blob;
 
-                if (data.boundingBox) {
-                    try {
-                        finalBlob = await cropId(blob, data.boundingBox);
-                    } catch (cropError) {
-                        console.error("Cropping request failed", cropError);
-                    }
-                }
-
+                // Use the full captured frame without cropping
                 const fileName = `id-${side}.jpg`;
-                const file = new File([finalBlob], fileName, { type: "image/jpeg" });
+                const file = new File([blob], fileName, { type: "image/jpeg" });
                 setCapturedFile(file);
-                setPreviewUrl(URL.createObjectURL(finalBlob));
+                setPreviewUrl(URL.createObjectURL(blob));
 
             } else if (data.feedback) {
                 setFeedback(data.feedback);
@@ -85,7 +78,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
                         </p>
                     </div>
 
-                    <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
+                    <div className="relative w-full aspect-[9/16] bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
                         <Image src={previewUrl} alt={`Captured ID ${side}`} fill className="object-contain" priority />
                     </div>
 
@@ -110,8 +103,8 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
 
     return (
         <div className="w-full h-full flex flex-col items-center relative animate-in fade-in duration-500">
-            <div className="relative w-full aspect-3/4 max-w-md bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500 shadow-xl">
-                <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "environment" }} className="w-full h-full object-cover" />
+            <div className="relative w-full aspect-[9/16] max-w-md bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500 shadow-xl">
+                <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "environment", aspectRatio: 0.5625 }} className="w-full h-full object-cover" />
 
                 {/* Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

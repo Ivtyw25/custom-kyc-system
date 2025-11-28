@@ -1,0 +1,48 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "e88eed6841532b402c2a525ed5f08a4e0c0dfd2eac6fcb1e3bb543c8c6d5d1d5": {
+      "displayName": "auth Nested Stack Template",
+      "source": {
+        "path": "amplifykycIvanthamsandbox030bd7317bauth40C9B9FB.nested.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-7668702d": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "e88eed6841532b402c2a525ed5f08a4e0c0dfd2eac6fcb1e3bb543c8c6d5d1d5.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "e8da7599cfb5bc18db9c48ae5f2f62d3836a9c03a0935d3a913a6f207c6855b9": {
+      "displayName": "liveness-stack Nested Stack Template",
+      "source": {
+        "path": "amplifykycIvanthamsandbox030bd7317blivenessstack26354E9E.nested.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-2397863b": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "e8da7599cfb5bc18db9c48ae5f2f62d3836a9c03a0935d3a913a6f207c6855b9.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "f81e348ccc07a2d3bcd270e39d2a3d4779b9d0c2366bce672b2d85f3071496c7": {
+      "displayName": "amplify-kyc-Ivantham-sandbox-030bd7317b Template",
+      "source": {
+        "path": "amplify-kyc-Ivantham-sandbox-030bd7317b.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-0eff8a8c": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "f81e348ccc07a2d3bcd270e39d2a3d4779b9d0c2366bce672b2d85f3071496c7.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

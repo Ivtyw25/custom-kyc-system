@@ -22,11 +22,9 @@ export default function SessionPage() {
     useEffect(() => {
         if (!sessionId) return;
 
-        // Subscribe to changes
         const channel = supabase
             .channel(`session-${sessionId}`)
             .on("postgres_changes", { event: "UPDATE", schema: "public", table: "verification_sessions", filter: `id=eq.${sessionId}` },
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (payload: any) => {
                     setStatus(payload.new.status);
                 })
@@ -38,7 +36,6 @@ export default function SessionPage() {
     }, [sessionId]);
 
     const mobileUrl = `${process.env.NEXT_PUBLIC_APP_URL}/kyc/mobile/${sessionId}`;
-
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
             <motion.div

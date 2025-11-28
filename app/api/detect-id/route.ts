@@ -46,11 +46,6 @@ export async function POST(req: NextRequest) {
         if (clearText.length < 5)
             return NextResponse.json({ success: false, feedback: "Hold steady." });
 
-        const avgConfidence = clearText.reduce((acc, curr) => acc + (curr.Confidence || 0), 0) / clearText.length;
-
-        if (avgConfidence < 95)
-            return NextResponse.json({ success: false, feedback: "Ensure good lighting and avoid glare." });
-
         let boundingBox;
         if (idLabel.Geometry && idLabel.Geometry.BoundingBox)
             boundingBox = idLabel.Geometry.BoundingBox;

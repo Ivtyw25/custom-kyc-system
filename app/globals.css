@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* =========================================
-   THEME CONFIGURATION
-   ========================================= */
 :root {
   /* --- Brand Colors --- */
   --primary: #FF9933;
@@ -34,6 +31,7 @@
   --radius-full: 9999px;
   /* For Buttons */
 }
+
 
 @theme inline {
   --color-background: var(--background);
@@ -124,4 +122,140 @@ body {
 
 .slide-in-from-bottom-4 {
   animation: slideUp 0.5s ease-out forwards;
+}
+
+/* --- Liveness Detector Overrides --- */
+
+/* 1. Theme Overrides (Orange) */
+[data-amplify-theme] {
+  --amplify-colors-primary-10: var(--secondary);
+  --amplify-colors-primary-80: var(--primary);
+  --amplify-colors-primary-90: var(--primary-hover);
+  --amplify-colors-primary-100: var(--primary-hover);
+  --amplify-components-button-primary-background-color: var(--primary);
+  --amplify-components-button-primary-hover-background-color: var(--primary-hover);
+  --amplify-components-button-primary-color: #ffffff;
+}
+
+/* 2. Layout: Instruction Overlay (Icons + Toast + Progress) */
+.liveness-wrapper .amplify-liveness-instruction-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: 1rem !important;
+  z-index: 50 !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+/* Icons: Absolute positioning to corners */
+.liveness-wrapper .amplify-liveness-recording-icon-container {
+  position: absolute !important;
+  top: 1.5rem !important;
+  left: 1.5rem !important;
+  pointer-events: auto !important;
+}
+
+.liveness-wrapper .amplify-liveness-cancel-container {
+  position: absolute !important;
+  top: 1.5rem !important;
+  right: 1.5rem !important;
+  pointer-events: auto !important;
+}
+
+/* Toast: Centered at top (flex item) */
+.liveness-wrapper .amplify-liveness-hint {
+  margin: 0 !important;
+  margin-top: 0.5rem !important;
+  width: auto !important;
+  max-width: 80% !important;
+  display: flex !important;
+  justify-content: center !important;
+  flex: 0 1 auto !important;
+  pointer-events: auto !important;
+  z-index: 55 !important;
+}
+
+/* Progress Bar: Below toast (flex item) */
+.liveness-wrapper .amplify-liveness-match-indicator {
+  margin-top: 0.5rem !important;
+  width: 50% !important;
+  max-width: 200px !important;
+  height: 6px !important;
+  border-radius: 9999px !important;
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+.liveness-wrapper .amplify-liveness-match-indicator>div {
+  background-color: var(--primary) !important;
+  height: 100% !important;
+  border-radius: 9999px !important;
+}
+
+.liveness-wrapper .amplify-liveness-toast {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #000000 !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 9999px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: auto !important;
+  min-width: min-content !important;
+}
+
+/* Inner Toast Elements */
+.liveness-wrapper .amplify-liveness-toast__container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.liveness-wrapper .amplify-liveness-toast__message {
+  color: #000000 !important;
+  text-align: center !important;
+}
+
+/* Force all children text to be black */
+.liveness-wrapper .amplify-liveness-toast * {
+  color: #000000 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .liveness-wrapper .amplify-liveness-toast {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* 3. Center Progress Bar / Oval */
+.liveness-wrapper .amplify-liveness-oval-canvas {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-left: 0 !important;
+}
+
+/* 4. Button Styling */
+.liveness-wrapper .amplify-button--primary {
+  background-color: var(--primary) !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.liveness-wrapper .amplify-button--primary:hover {
+  background-color: var(--primary-hover) !important;
 }
