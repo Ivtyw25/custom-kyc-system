@@ -11,7 +11,6 @@ export const createLivenessSession = async (sessionId: string) => {
     if (!response.ok) {
         throw new Error(data.error || "Failed to create session");
     }
-    console.log("Liveness session created:", data);
     return data;
 };
 

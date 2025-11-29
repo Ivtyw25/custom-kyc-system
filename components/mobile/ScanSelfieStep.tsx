@@ -31,8 +31,8 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
         const startSession = async () => {
             setLoading(true);
             try {
-                const { livenessSessionId } = await fetchCreateLiveness();
-                setLivenessSessionID(livenessSessionId);
+                const data = await createLivenessSession(sessionId);
+                setLivenessSessionID(data.sessionId);
             } catch {
                 handleFailure("Failed to start session");
             } finally {
@@ -42,12 +42,6 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
         startSession();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const fetchCreateLiveness = async () => {
-        const data = await createLivenessSession(sessionId);
-        setLivenessSessionID(data.sessionId);
-        return { livenessSessionId: data.sessionId };
-    };
 
     const handleFailure = async (errorMessage: string) => {
         console.error(errorMessage);
@@ -108,13 +102,13 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
                     {livenessSessionId && !loading ? (
                         <FaceLivenessDetector
                             sessionId={livenessSessionId}
-                            region={process.env.NEXT_PUBLIC_AWS_REGION || "ap-northeast-1"}
+                            region={process.env.NEXT_PUBLIC_AWS_LIVENESS_REGION ||  "ap-northeast-1"}
                             onAnalysisComplete={handleAnalysisComplete}
                             onUserCancel={async () => {
                                 await handleFailure("User cancelled the check.");
                             }}
                             onError={async (err: unknown) => {
-                                const message = err instanceof Error ? err.message : "An error occurred";
+                                const message = err instanceof Error ? err.message :     "An error occurred";
                                 await handleFailure(message);
                             }}
                             components={{
