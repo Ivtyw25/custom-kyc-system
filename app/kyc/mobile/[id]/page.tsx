@@ -27,43 +27,6 @@ export default function MobileCapture() {
         }
     };
 
-    const uploadAndVerify = async (idFront: File, idBack: File, selfie: File) => {
-        setStep("uploading");
-        setProgress(90);
-
-        const uploadFile = async (file: File, prefix: string) => {
-            const fileName = `${sessionId}/${prefix}.${file.type.split("/")[1]}`;
-            const res = await fetch("/api/s3-upload", {
-                method: "POST",
-                body: JSON.stringify({ fileName, fileType: file.type }),
-            });
-            const { uploadUrl } = await res.json();
-            await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
-            return fileName;
-        };
-
-        try {
-            const idFrontKey = await uploadFile(idFront, "id-front");
-            const idBackKey = await uploadFile(idBack, "id-back");
-
-            await fetch("/api/verify-identity", {
-                method: "POST",
-                body: JSON.stringify({
-                    sessionId,
-                    idFrontKey,
-                    idBackKey,
-                }),
-            });
-
-            setStep("complete");
-            setProgress(100);
-        } catch (err) {
-            alert("Error uploading images");
-            console.error(err);
-            setStep("intro"); // Reset on error
-        }
-    };
-
     return (
         <div className="min-h-screen flex flex-col bg-background justify-center items-center p-4">
             {/* Content */}
