@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
 
         const response = await rekognitionLivenessClient.send(command);
         const isLive = response.Confidence && response.Confidence > 75;
+        console.log("Liveness Confidence:", response.Confidence);
 
         return NextResponse.json({
             isLive,

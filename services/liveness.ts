@@ -29,6 +29,5 @@ export const getLivenessResults = async (livenessSessionId: string) => {
         throw new Error(data.error || "Failed to get results");
     }
 
-    console.log("Liveness results:", data);
     return data;
 };
