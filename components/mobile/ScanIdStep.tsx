@@ -44,7 +44,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
 
     useEffect(() => {
         if (isDetecting) {
-            const interval = setInterval(() => { analyzeFrame(); }, 3000);
+            const interval = setInterval(() => { analyzeFrame(); }, 2000);
             setScanInterval(interval);
         } else
             if (scanInterval) clearInterval(scanInterval);
@@ -57,7 +57,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const handleRetake = () => {
         setCapturedFile(null);
         setPreviewUrl(null);
-        setFeedback(`Move your ID (${side}) into View`);
+        setFeedback(`Move your ${side} ID into View`);
         setIsDetecting(true);
     };
 
@@ -77,7 +77,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
                         </p>
                     </div>
 
-                    <div className="relative w-full aspect-3/4 bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
+                    <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
                         <Image src={previewUrl} alt={`Captured ID ${side}`} fill className="object-cover" priority />
                     </div>
 
@@ -103,7 +103,18 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     return (
         <div className="w-full h-full flex flex-col items-center relative animate-in fade-in duration-500">
             <div className="relative w-full aspect-3/4 max-w-md bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500 shadow-xl">
-                <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "environment" }} className="w-full h-full object-cover" />
+                <Webcam
+                    ref={webcamRef}
+                    audio={false}
+                    screenshotFormat="image/jpeg"
+                    screenshotQuality={1}
+                    videoConstraints={{
+                        facingMode: "environment",
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }}
+                    className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-[85%] aspect-[1.586] border-2 border-white/50 rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
                 </div>

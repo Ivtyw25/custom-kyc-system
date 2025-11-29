@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         const idLabel = await validateIdLabel(buffer, side as "front" | "back");
 
         if (!idLabel) {
-            return NextResponse.json({ success: false, feedback: "Move your ID into view" });
+            return NextResponse.json({ success: false, feedback: `Move your ${side} ID into view` });
         }
 
         if (side !== "back") {
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
         const textDetections = await checkTextClarity(buffer);
         const clearText = textDetections.filter(t => (t.Confidence || 0) > 95);
-        if (clearText.length < 5)
+        if (clearText.length < 4)
             return NextResponse.json({ success: false, feedback: "Hold steady." });
         return NextResponse.json({ success: true, feedback: "ID Detected!" });
 

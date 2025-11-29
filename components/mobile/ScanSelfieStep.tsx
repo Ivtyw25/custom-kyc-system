@@ -31,7 +31,8 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
         const startSession = async () => {
             setLoading(true);
             try {
-                await fetchCreateLiveness();
+                const { livenessSessionId } = await fetchCreateLiveness();
+                setLivenessSessionID(livenessSessionId);
             } catch {
                 handleFailure("Failed to start session");
             } finally {
@@ -69,6 +70,7 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
         try {
             const data = await getLivenessResults(livenessSessionId);
             if (data.isLive) {
+                toast.success("Liveness check passed, processing your verification");
                 await fetch("/api/verification-session/status", {
                     method: "POST",
                     body: JSON.stringify({ sessionId, status: "processing" }),

@@ -24,7 +24,7 @@ export default function SessionPage() {
         if (!sessionId) return;
 
         const channel = supabase
-            .channel(`session-${sessionId}`)
+            .channel(`session-status-change`)
             .on("postgres_changes", { event: "UPDATE", schema: "public", table: "verification_sessions", filter: `id=eq.${sessionId}` },
                 (payload: any) => {
                     setStatus(payload.new.status);
@@ -34,7 +34,7 @@ export default function SessionPage() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [sessionId]);
+    }, [sessionId, supabase]);
 
     const mobileUrl = `${process.env.NEXT_PUBLIC_APP_URL}/kyc/mobile/${sessionId}`;
     return (
