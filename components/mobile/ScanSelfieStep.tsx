@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 import { ThemeProvider, Theme } from '@aws-amplify/ui-react';
@@ -8,22 +8,39 @@ import { Amplify } from 'aws-amplify';
 import outputs from '@/amplify_outputs.json'
 import { createLivenessSession, getLivenessResults } from '@/services/liveness';
 import { themes } from '@lib/constants'
+import { ScanSelfieStepProps } from "@/types";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { uploadFile, compareFaces } from '@/services/id-verification';
 
 const FaceLivenessDetector = dynamic(
     () => import('@aws-amplify/ui-react-liveness').then((mod) => mod.FaceLivenessDetector),
     { ssr: false }
 );
 
-import { ScanSelfieStepProps } from "@/types";
 
 Amplify.configure(outputs);
-
 const customTheme: Theme = themes;
 
-export function ScanSelfieStep({ sessionId }: ScanSelfieStepProps) {
+export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [livenessSessionId, setLivenessSessionID] = useState<string | null>(null)
+    const router = useRouter();
+
+    useEffect(() => {
+        const startSession = async () => {
+            setLoading(true);
+            try {
+                await fetchCreateLiveness();
+            } catch {
+                handleFailure("Failed to start session");
+            } finally {
+                setLoading(false);
+            }
+        };
+        startSession();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const fetchCreateLiveness = async () => {
         const data = await createLivenessSession(sessionId);
@@ -31,84 +48,85 @@ export function ScanSelfieStep({ sessionId }: ScanSelfieStepProps) {
         return { livenessSessionId: data.sessionId };
     };
 
-    const handleAnalysisComplete = async () => {
-        if (!livenessSessionId) return;
+    const handleFailure = async (errorMessage: string) => {
+        console.error(errorMessage);
+        toast.error(errorMessage);
+        setLivenessSessionID(null);
 
         try {
-            const data = await getLivenessResults(livenessSessionId);
+            await fetch("/api/verification-session/status", {
+                method: "POST",
+                body: JSON.stringify({ sessionId, status: "failed" }),
+            });
+            router.push("/kyc/failed");
+        } catch (err) {
+            console.error("Failed to update session status", err);
+        }
+    };
 
+    const handleAnalysisComplete = async () => {
+        if (!livenessSessionId || !files.idFront || !files.idBack) return;
+        try {
+            const data = await getLivenessResults(livenessSessionId);
             if (data.isLive) {
-                // here should compare faces from the selfie and the id card
-                // if the faces are the same, update the supabase verification session to success
-                // and redirect to the success page
+                await fetch("/api/verification-session/status", {
+                    method: "POST",
+                    body: JSON.stringify({ sessionId, status: "processing" }),
+                });
+                router.push("/kyc/processing");
+                const frontIdKey = await uploadFile(files.idFront, "id-front", sessionId);
+                const backIdKey = await uploadFile(files.idBack, "id-back", sessionId);
+                const selfieKey = `${sessionId}/${livenessSessionId}/reference.jpg`;
+
+                const compareResult = await compareFaces(frontIdKey, selfieKey);
+                if (!compareResult.success) {
+                    handleFailure("Face comparison failed. Please try again.");
+                    return;
+                }
+
+                await fetch("/api/verification-session/status", {
+                    method: "POST",
+                    body: JSON.stringify({ sessionId, status: "success" }),
+                });
+                router.push("/kyc/success");
             } else {
-                setError("Liveness check failed. Please try again.");
+                handleFailure("Liveness check failed. Please try again.");
                 setLivenessSessionID(null);
-                // here should update the supabase verification session to failed
-                // and redirect to the failed page
             }
         } catch (err) {
             console.error(err);
-            setError("Error verifying liveness results.");
+            handleFailure("Error verifying liveness results.");
         }
     };
 
     return (
         <ThemeProvider theme={customTheme}>
             <div className="w-full h-full flex flex-col items-center justify-center min-h-[400px]">
-                {error ? (
-                    <div className="text-center space-y-4">
-                        <p className="text-red-600 font-medium">{error}</p>
-                        <button
-                            onClick={() => setError(null)}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
-                        >
-                            Try Again
-                        </button>
-                    </div>
-                ) : (
-                    <div className="liveness-wrapper w-full max-w-md h-[500px] relative bg-gray-100 rounded-xl overflow-hidden">
-                        {livenessSessionId ? (
-                            <FaceLivenessDetector
-                                key="liveness-detector-v10"
-                                sessionId={livenessSessionId}
-                                region={process.env.NEXT_PUBLIC_AWS_REGION || "ap-northeast-1"}
-                                onAnalysisComplete={handleAnalysisComplete}
-                                onUserCancel={() => {
-                                    setError("User cancelled the check.");
-                                    setLivenessSessionID(null);
-                                    //verification terminate
-                                }}
-                                onError={(err: unknown) => {
-                                    const message = err instanceof Error ? err.message : "An error occurred";
-                                    setError(message);
-                                    setLivenessSessionID(null);
-                                }}
-                                components={{
-                                    PhotosensitiveWarning: () => null,
-                                }}
-                            />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
-                                <button
-                                    onClick={async () => {
-                                        setLoading(true);
-                                        try {
-                                            await fetchCreateLiveness();
-                                        } catch {
-                                            setError("Failed to start session");
-                                        } finally {
-                                            setLoading(false);
-                                        }
-                                    }}
-                                    className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                                >
-                                    {loading ? <Loader2 className="animate-spin" /> : "Start Liveness Check"}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                )}
+                <div className="liveness-wrapper w-full max-w-md h-[500px] relative bg-gray-100 rounded-xl overflow-hidden">
+                    {livenessSessionId && !loading ? (
+                        <FaceLivenessDetector
+                            sessionId={livenessSessionId}
+                            region={process.env.NEXT_PUBLIC_AWS_REGION || "ap-northeast-1"}
+                            onAnalysisComplete={handleAnalysisComplete}
+                            onUserCancel={async () => {
+                                await handleFailure("User cancelled the check.");
+                            }}
+                            onError={async (err: unknown) => {
+                                const message = err instanceof Error ? err.message : "An error occurred";
+                                await handleFailure(message);
+                            }}
+                            components={{
+                                PhotosensitiveWarning: () => null,
+                            }}
+                        />
+                    ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 space-y-4">
+                            <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+                            <p className="text-gray-600 font-medium">Initializing camera...</p>
+                        </div>
+                    )}
+                </div>
+
             </div>
         </ThemeProvider>
     );

@@ -3,7 +3,6 @@ import {
     validateIdLabel,
     checkFaceQuality,
     checkTextClarity,
-    calculateBoundingBox
 } from "@/lib/id-validation";
 
 export async function POST(req: NextRequest) {
@@ -45,14 +44,7 @@ export async function POST(req: NextRequest) {
         const clearText = textDetections.filter(t => (t.Confidence || 0) > 95);
         if (clearText.length < 5)
             return NextResponse.json({ success: false, feedback: "Hold steady." });
-
-        let boundingBox;
-        if (idLabel.Geometry && idLabel.Geometry.BoundingBox)
-            boundingBox = idLabel.Geometry.BoundingBox;
-        else
-            boundingBox = calculateBoundingBox(clearText, 0.1);
-
-        return NextResponse.json({ success: true, feedback: "ID Detected!", boundingBox });
+        return NextResponse.json({ success: true, feedback: "ID Detected!" });
 
     } catch (error: unknown) {
         console.error("Error detecting ID:", error);

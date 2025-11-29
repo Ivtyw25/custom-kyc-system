@@ -10,23 +10,22 @@ export async function detectId(imageBlob: Blob, side: "front" | "back") {
     return res.json();
 }
 
-interface BoundingBox {
-    Left: number;
-    Top: number;
-    Width: number;
-    Height: number;
-}
-
-export async function cropId(imageBlob: Blob, boundingBox: BoundingBox) {
-    const formData = new FormData();
-    formData.append("image", imageBlob);
-    formData.append("boundingBox", JSON.stringify(boundingBox));
-
-    const res = await fetch("/api/crop-id", {
+export async function uploadFile(file: File, prefix: string, sessionId: string) {
+    const fileName = `${sessionId}/${prefix}.${file.type.split("/")[1]}`;
+    const res = await fetch("/api/s3-upload", {
         method: "POST",
-        body: formData,
+        body: JSON.stringify({ fileName, fileType: file.type }),
     });
+    const { uploadUrl } = await res.json();
+    await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+    return fileName;
+};
 
-    if (!res.ok) throw new Error("Cropping failed");
-    return res.blob();
+
+export async function compareFaces(idFrontKey: string, selfieKey: string) {
+    const res = await fetch("/api/verify-identity/compare-faces", {
+        method: "POST",
+        body: JSON.stringify({ idFrontKey, selfieKey }),
+    });
+    return res.json();
 }

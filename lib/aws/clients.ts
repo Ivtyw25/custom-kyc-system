@@ -18,14 +18,6 @@ export const rekognitionClient = new RekognitionClient({
     }
 });
 
-export const s3Client = new S3Client({
-    region: region,
-    credentials: {
-        accessKeyId: accessKeyId || "",
-        secretAccessKey: secretAccessKey || ""
-    }
-});
-
 export const rekognitionLivenessClient = new RekognitionClient({
     region: livenessRegion,
     credentials: {

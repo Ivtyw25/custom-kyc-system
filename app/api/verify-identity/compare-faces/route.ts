@@ -1,30 +1,20 @@
 import { CompareFacesCommand } from "@aws-sdk/client-rekognition";
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { rekognitionClient } from "@/lib/aws/clients";
 
-const supabase_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabase_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const bucketName = process.env.AWS_S3_BUCKET;
 
-if (!supabase_url || !supabase_anon_key || !bucketName) {
+if (!bucketName) {
     console.error("Missing configuration:", {
-        hasSupabaseUrl: !!supabase_url,
-        hasSupabaseKey: !!supabase_anon_key,
+        hasBucketName: !!bucketName,
         bucketName
     });
-    throw new Error("Missing AWS configuration or Supabase configuration");
+    throw new Error("Missing AWS configuration");
 }
-
-const supabase = createClient(supabase_url, supabase_anon_key);
 
 export async function POST(req: NextRequest) {
     try {
-        const { sessionId, idFrontKey, selfieKey } = await req.json();
-
-        console.log("Verify Identity Request:", { sessionId, idFrontKey, selfieKey });
-
-        // Validate all required parameters
+        const { idFrontKey, selfieKey } = await req.json();
         if (!bucketName || !idFrontKey || !selfieKey) {
             console.error("Missing required parameters:", {
                 hasBucketName: !!bucketName,
@@ -38,40 +28,22 @@ export async function POST(req: NextRequest) {
             }, { status: 400 });
         }
 
-        // 1. Ask AWS Rekognition to compare the faces
         const rekognitionParams = {
             SourceImage: { S3Object: { Bucket: bucketName, Name: idFrontKey } }, // ID Card
             TargetImage: { S3Object: { Bucket: bucketName, Name: selfieKey } },  // Selfie
             SimilarityThreshold: 80,
         };
 
-
         const command = new CompareFacesCommand(rekognitionParams);
-
-        console.log("Sending Rekognition Command...");
         const response = await rekognitionClient.send(command);
-        console.log("Rekognition Response:", JSON.stringify(response, null, 2));
 
         const match = response.FaceMatches && response.FaceMatches.length > 0;
         const confidence = match ? response.FaceMatches?.[0]?.Similarity ?? 0 : 0;
-        const isVerified = confidence > 80; // Custom logic: Valid only if > 80% match
+        const isVerified = confidence > 80;
 
-        console.log("Match Result:", { match, confidence, isVerified });
+        return NextResponse.json({ success: isVerified, confidence });
 
-        // 2. Update Supabase (Desktop will see this instantly via Realtime)
-        console.log("Updating Supabase...");
-        await supabase
-            .from('verification_sessions')
-            .update({
-                status: isVerified ? 'success' : 'failed',
-                match_confidence: confidence
-            })
-            .eq('id', sessionId);
-
-        return NextResponse.json({ success: true, confidence });
-
-    } catch (error: unknown) {
-        console.error("=== VERIFY IDENTITY ERROR ===");
+    } catch (error: unknown) {  
         const err = error instanceof Error ? error : new Error(String(error));
         console.error("Error Type:", err.constructor.name);
         console.error("Error Message:", err.message);

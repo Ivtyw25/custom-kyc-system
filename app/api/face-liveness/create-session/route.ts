@@ -24,12 +24,10 @@ export async function POST(req: NextRequest) {
                     S3Bucket: bucketName,
                     S3KeyPrefix: `${sessionId}/`
                 },
-                AuditImagesLimit: 4
+                AuditImagesLimit: 2
             }
         });
-
         const response = await rekognitionLivenessClient.send(command);
-
         return NextResponse.json({
             sessionId: response.SessionId
         });

@@ -1,4 +1,4 @@
-import { s3Client } from "@/lib/aws/clients";
+import { s3LivenessClient } from "@/lib/aws/clients";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse, NextRequest } from "next/server";
@@ -18,6 +18,6 @@ export async function POST(req: NextRequest) {
         ContentType: fileType,
     });
 
-    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
+    const uploadUrl = await getSignedUrl(s3LivenessClient, command, { expiresIn: 60 });
     return NextResponse.json({ uploadUrl });
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
@@ -17,6 +17,7 @@ const supabase = createClient(supabase_url, supabase_anon_key);
 
 export default function SessionPage() {
     const { id: sessionId } = useParams();
+    const router = useRouter();
     const [status, setStatus] = useState("waiting"); // waiting, processing, success, failed
 
     useEffect(() => {
@@ -100,7 +101,21 @@ export default function SessionPage() {
                             <span className="text-5xl">❌</span>
                         </div>
                         <h2 className="text-3xl font-bold mb-2">Verification Failed</h2>
-                        <p className="text-gray-500">Face did not match ID card.</p>
+                        <p className="text-gray-500 mb-8">
+                            We couldn&apos;t verify your identity.
+                        </p>
+
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => router.push("/kyc")}
+                                className="w-full py-3.5 bg-orange-500 text-white font-semibold rounded-xl shadow-lg hover:bg-orange-600 transition-all active:scale-95"
+                            >
+                                Start New Verification
+                            </button>
+                            <p className="text-sm text-gray-400">
+                                If you don&apos;t wish to retry, you can close this page.
+                            </p>
+                        </div>
                     </motion.div>
                 )}
             </motion.div>

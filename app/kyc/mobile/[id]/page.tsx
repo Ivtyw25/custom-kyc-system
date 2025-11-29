@@ -13,19 +13,17 @@ import { Files, Step } from "@/types";
 export default function MobileCapture() {
     const params = useParams();
     const sessionId = params.id as string;
-    const [step, setStep] = useState<Step>("intro");
+    const [step, setStep] = useState<Step>("intro-id-front");
     const [files, setFiles] = useState<Files>({});
     const [progress, setProgress] = useState(0);
 
     const handleIdCaptured = (file: File) => {
         if (step === "scan-id-front") {
             setFiles(prev => ({ ...prev, idFront: file }));
-            setStep("scan-id-back");
-            setProgress(50);
+            setStep("intro-id-back");
         } else if (step === "scan-id-back") {
             setFiles(prev => ({ ...prev, idBack: file }));
-            setStep("scan-selfie");
-            setProgress(75);
+            setStep("intro-selfie");
         }
     };
 
@@ -80,23 +78,37 @@ export default function MobileCapture() {
                     <Progress value={progress} className="h-2" />
                 </div>
 
-                {step === "intro" && (
+                {step === "intro-id-front" && (
                     <IntroStep onNext={() => {
                         setStep("scan-id-front");
                         setProgress(25);
-                    }} />
+                    }} title="Get ready to scan your ID" description="You must scan your driver&apos;s license, passport or government-issued photo ID" icon="id" />
                 )}
 
                 {step === "scan-id-front" && (
                     <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} side="front" />
                 )}
 
+                {step === "intro-id-back" && (
+                    <IntroStep onNext={() => {
+                        setStep("scan-id-back");
+                        setProgress(50);
+                    }} title="Flip your ID over" description="You must scan the back of your identity card" icon="id" />
+                )}
+
                 {step === "scan-id-back" && (
                     <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} side="back" />
                 )}
 
+                {step === "intro-selfie" && (
+                    <IntroStep onNext={() => {
+                        setStep("scan-selfie");
+                        setProgress(75);
+                    }} title="Get ready to take a selfie" description="Take a live selfie images to compare to the image on your photo ID" icon="selfie" />
+                )}
+
                 {step === "scan-selfie" && (
-                    <ScanSelfieStep sessionId={sessionId} />
+                    <ScanSelfieStep sessionId={sessionId} files={files} />
                 )}
 
                 {step === "uploading" && (

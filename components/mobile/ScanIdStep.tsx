@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const webcamRef = useRef<Webcam>(null);
     const [isDetecting, setIsDetecting] = useState(true);
-    const [feedback, setFeedback] = useState(`Move your ID (${side}) into View`);
+    const [feedback, setFeedback] = useState(`Move your ID into View`);
     const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
     const [capturedFile, setCapturedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -28,8 +28,7 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
             if (data.success) {
                 toast.success("ID Captured Successfully!");
                 setIsDetecting(false);
-                
-                // Use the full captured frame without cropping
+
                 const fileName = `id-${side}.jpg`;
                 const file = new File([blob], fileName, { type: "image/jpeg" });
                 setCapturedFile(file);
@@ -78,8 +77,8 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
                         </p>
                     </div>
 
-                    <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
-                        <Image src={previewUrl} alt={`Captured ID ${side}`} fill className="object-contain" priority />
+                    <div className="relative w-full aspect-3/4 bg-black rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg">
+                        <Image src={previewUrl} alt={`Captured ID ${side}`} fill className="object-cover" priority />
                     </div>
 
                     <div className="space-y-3 pt-4">
@@ -105,8 +104,6 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
         <div className="w-full h-full flex flex-col items-center relative animate-in fade-in duration-500">
             <div className="relative w-full aspect-3/4 max-w-md bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500 shadow-xl">
                 <Webcam ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "environment" }} className="w-full h-full object-cover" />
-
-                {/* Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-[85%] aspect-[1.586] border-2 border-white/50 rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
                 </div>
