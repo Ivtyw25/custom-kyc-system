@@ -1,14 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { IntroStep } from "@/components/mobile/IntroStep";
 import { ScanIdStep } from "@/components/mobile/ScanIdStep";
-import { UploadingStep } from "@/components/mobile/UploadingStep";
 import { CompleteStep } from "@/components/mobile/CompleteStep";
 import { ScanSelfieStep } from "@/components/mobile/ScanSelfieStep";
 import { Files, Step } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 export default function MobileCapture() {
     const params = useParams();
@@ -16,6 +17,26 @@ export default function MobileCapture() {
     const [step, setStep] = useState<Step>("intro-id-front");
     const [files, setFiles] = useState<Files>({});
     const [progress, setProgress] = useState(0);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchSessionStatus = async () => {
+
+            try {
+                const { data } = await supabase.from("verification_sessions").select("status").eq("id", sessionId).single();
+                if (data && data.status === "success") {
+                    router.push("/kyc/success");
+                } else if (data && data.status === "failed") {
+                    router.push("/kyc/failed");
+                } else if (data && data.status === "processing") {
+                    router.push("/kyc/processing");
+                }
+            } catch (error) {
+                console.error("Error fetching session status:", error);
+            }
+        };
+        fetchSessionStatus();
+    }, []);
 
     const handleIdCaptured = (file: File) => {
         if (step === "scan-id-front") {
@@ -72,10 +93,6 @@ export default function MobileCapture() {
 
                 {step === "scan-selfie" && (
                     <ScanSelfieStep sessionId={sessionId} files={files} />
-                )}
-
-                {step === "uploading" && (
-                    <UploadingStep />
                 )}
 
                 {step === "complete" && (

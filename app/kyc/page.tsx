@@ -1,17 +1,8 @@
 "use client";
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-
-const supabase_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabase_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabase_url || !supabase_anon_key) {
-    throw new Error("Missing Supabase configuration");
-}
-
-const supabase = createClient(supabase_url, supabase_anon_key);
+import { supabase } from "@/lib/supabase";
 
 export default function DesktopKYC() {
     const [loading, setLoading] = useState(false);
@@ -54,7 +45,7 @@ export default function DesktopKYC() {
                 >
                     {loading ? (
                         <motion.span
-                            animate={{ 
+                            animate={{
                                 x: [0, -4, 4, -4, 0],
                                 y: [0, -1, 0, -1, 0]
                             }}

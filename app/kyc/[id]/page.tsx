@@ -1,19 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
 import { containerVariants, itemVariants } from "@lib/constants";
-
-const supabase_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabase_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabase_url || !supabase_anon_key) {
-    throw new Error("Missing Supabase configuration");
-}
-
-const supabase = createClient(supabase_url, supabase_anon_key);
+import { supabase } from "@/lib/supabase";
 
 export default function SessionPage() {
     const { id: sessionId } = useParams();
