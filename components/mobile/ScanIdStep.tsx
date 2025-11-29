@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const webcamRef = useRef<Webcam>(null);
     const [isDetecting, setIsDetecting] = useState(true);
-    const [feedback, setFeedback] = useState(`Move your ID into View`);
+    const [feedback, setFeedback] = useState(`Move your ${side} ID into View`);
     const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
     const [capturedFile, setCapturedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);

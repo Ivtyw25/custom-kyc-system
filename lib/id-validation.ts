@@ -20,7 +20,8 @@ export async function checkFaceQuality(buffer: Buffer) {
         Attributes: ["DEFAULT"]
     });
     const response = await rekognitionClient.send(command);
-    return response.FaceDetails?.[0];
+    const sortedFaces = response.FaceDetails?.sort((a, b) => (b.Confidence || 0) - (a.Confidence || 0));
+    return sortedFaces?.[0];
 }
 
 export async function checkTextClarity(buffer: Buffer) {

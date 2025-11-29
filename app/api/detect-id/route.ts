@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
         }
 
         const textDetections = await checkTextClarity(buffer);
+        console.log("Text Detections:", textDetections.map(t => ({ text: t.DetectedText, confidence: t.Confidence })));
         const clearText = textDetections.filter(t => (t.Confidence || 0) > 95);
         if (clearText.length < 4)
             return NextResponse.json({ success: false, feedback: "Hold steady." });
