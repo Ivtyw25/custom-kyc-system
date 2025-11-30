@@ -1,6 +1,6 @@
 import { CompareFacesCommand } from "@aws-sdk/client-rekognition";
 import { NextRequest, NextResponse } from "next/server";
-import { rekognitionClient } from "@/lib/aws/clients";
+import { rekognitionLivenessClient } from "@/lib/aws/clients";
 
 const bucketName = process.env.AWS_S3_BUCKET;
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         };
 
         const command = new CompareFacesCommand(rekognitionParams);
-        const response = await rekognitionClient.send(command);
+        const response = await rekognitionLivenessClient.send(command);
 
         const match = response.FaceMatches && response.FaceMatches.length > 0;
         const confidence = match ? response.FaceMatches?.[0]?.Similarity ?? 0 : 0;

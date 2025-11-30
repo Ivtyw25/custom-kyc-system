@@ -74,6 +74,8 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
                 const backIdKey = await uploadFile(files.idBack, "id-back", sessionId);
                 const selfieKey = `${sessionId}/${livenessSessionId}/reference.jpg`;
 
+                console.log("Comparing faces with keys:", { frontIdKey, selfieKey });
+
                 const compareResult = await compareFaces(frontIdKey, selfieKey);
                 if (!compareResult.success) {
                     handleFailure("Face comparison failed. Please try again.");
@@ -102,13 +104,13 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
                     {livenessSessionId && !loading ? (
                         <FaceLivenessDetector
                             sessionId={livenessSessionId}
-                            region={process.env.NEXT_PUBLIC_AWS_LIVENESS_REGION ||  "ap-northeast-1"}
+                            region={process.env.NEXT_PUBLIC_AWS_LIVENESS_REGION || "ap-northeast-1"}
                             onAnalysisComplete={handleAnalysisComplete}
                             onUserCancel={async () => {
                                 await handleFailure("User cancelled the check.");
                             }}
                             onError={async (err: unknown) => {
-                                const message = err instanceof Error ? err.message :     "An error occurred";
+                                const message = err instanceof Error ? err.message : "An error occurred";
                                 await handleFailure(message);
                             }}
                             components={{

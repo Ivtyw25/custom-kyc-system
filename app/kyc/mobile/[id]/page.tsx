@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { IntroStep } from "@/components/mobile/IntroStep";
 import { ScanIdStep } from "@/components/mobile/ScanIdStep";
-import { CompleteStep } from "@/components/mobile/CompleteStep";
 import { ScanSelfieStep } from "@/components/mobile/ScanSelfieStep";
 import { Files, Step } from "@/types";
 import { supabase } from "@/lib/supabase";
@@ -93,10 +92,6 @@ export default function MobileCapture() {
 
                 {step === "scan-selfie" && (
                     <ScanSelfieStep sessionId={sessionId} files={files} />
-                )}
-
-                {step === "complete" && (
-                    <CompleteStep />
                 )}
             </motion.div>
         </div>

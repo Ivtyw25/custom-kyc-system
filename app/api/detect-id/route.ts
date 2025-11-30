@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
                 if (sharpness < 4.3)
                     return NextResponse.json({ success: false, feedback: "Image is blurry" })
-                if (brightness < 40)
+                if (brightness < 50)
                     return NextResponse.json({ success: false, feedback: "Too dark" });
                 if (brightness > 95)
                     return NextResponse.json({ success: false, feedback: "Too bright." });
