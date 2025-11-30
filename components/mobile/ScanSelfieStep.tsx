@@ -74,8 +74,6 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
                 const backIdKey = await uploadFile(files.idBack, "id-back", sessionId);
                 const selfieKey = `${sessionId}/${livenessSessionId}/reference.jpg`;
 
-                console.log("Comparing faces with keys:", { frontIdKey, selfieKey });
-
                 const compareResult = await compareFaces(frontIdKey, selfieKey);
                 if (!compareResult.success) {
                     handleFailure("Face comparison failed. Please try again.");

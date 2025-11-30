@@ -11,12 +11,9 @@ export async function detectId(imageBlob: Blob, side: "front" | "back") {
 }
 
 export async function uploadFile(file: File, prefix: string, sessionId: string) {
-    // Normalize extension: jpeg -> jpg
     const rawExtension = file.type.split("/")[1];
     const extension = rawExtension === "jpeg" ? "jpg" : rawExtension;
     const fileName = `${sessionId}/${prefix}.${extension}`;
-
-    console.log(`Uploading ${prefix} to ${fileName} (Type: ${file.type})`);
 
     const res = await fetch("/api/s3-upload", {
         method: "POST",

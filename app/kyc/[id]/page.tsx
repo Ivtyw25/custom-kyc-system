@@ -5,6 +5,7 @@ import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
 import { containerVariants, itemVariants } from "@lib/constants";
 import { supabase } from "@/lib/supabase";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export default function SessionPage() {
     const { id: sessionId } = useParams();
@@ -75,7 +76,7 @@ export default function SessionPage() {
                         className="text-green-600 py-10"
                     >
                         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <span className="text-5xl">✅</span>
+                            <CheckCircle className="w-12 h-12 text-green-600" />
                         </div>
                         <h2 className="text-3xl font-bold mb-2">Verified!</h2>
                         <p className="text-gray-500">You may now proceed.</p>
@@ -89,7 +90,7 @@ export default function SessionPage() {
                         className="text-red-500 py-10"
                     >
                         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <span className="text-5xl">❌</span>
+                            <XCircle className="w-12 h-12 text-red-600" />
                         </div>
                         <h2 className="text-3xl font-bold mb-2">Verification Failed</h2>
                         <p className="text-gray-500 mb-8">
