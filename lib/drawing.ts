@@ -17,12 +17,13 @@ export const drawOverlay = (
     if (predictions && typeof predictions.x === 'number') {
         const { x, y, width, height } = predictions;
 
+        const padding = 20;
         const x1 = x - width / 2;
-        const y1 = y - height / 2;
+        const y1 = y - height / 2 - padding;
         const x2 = x + width / 2;
-        const y2 = y + height / 2;
+        const y2 = y + height / 2 + padding;
 
-        const color = isStable ? "#FF0000" : "#FFFFFF";
+        const color = isStable ? "#00FF00" : "#FF0000";
 
         // Draw corners
         const cornerLength = 20;

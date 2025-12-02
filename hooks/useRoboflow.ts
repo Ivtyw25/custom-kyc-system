@@ -63,10 +63,10 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                 onData: (data: any) => {
                     if (!isDetecting) return;
                     const result = Array.isArray(data) ? data[0] : data;
-                    const raw = result.serialized_output_data
 
                     if (!result) return;
 
+                    const raw = result.serialized_output_data;
                     const variance = raw.variance;
                     const predictions = raw.boxes?.predictions || [];
                     const pred = predictions.length > 0 ? predictions[0] : null;
@@ -79,11 +79,11 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     });
 
                     if (canvasRef.current && videoRef.current) {
-                        drawOverlay(canvasRef.current, videoRef.current, pred, consecutiveDetectionsRef.current >= 15);
+                        drawOverlay(canvasRef.current, videoRef.current, pred, consecutiveDetectionsRef.current >= 10);
                     }
 
                     // 1. Check for blur
-                    if (typeof variance === 'number' && variance <= 100) {
+                    if (typeof variance === 'number' && variance <= 90) {
                         onFeedback("Image is blurry");
                         consecutiveDetectionsRef.current = 0;
                         return;
@@ -117,14 +117,14 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     lastBoxRef.current = pred;
 
                     if (isMoving) {
-                        onFeedback("Hold still...");
+                        onFeedback("Please hold still");
                         consecutiveDetectionsRef.current = 0;
                     } else {
                         consecutiveDetectionsRef.current += 1;
                         onFeedback("Hold still...");
                     }
 
-                    if (consecutiveDetectionsRef.current >= 15) {
+                    if (consecutiveDetectionsRef.current >= 30) {
                         onFeedback("Image successfully captured");
 
                         if (cropData && cropData.value) {
