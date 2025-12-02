@@ -22,3 +22,16 @@ export interface IntroStepProps {
     description: string;
     icon?: "id" | "selfie";
 }
+
+import { RefObject } from "react";
+
+export interface UseRoboflowProps {
+    workspaceName: string;
+    workflowId: string;
+    isDetecting: boolean;
+    onStable: () => void;
+    onFeedback: (msg: string) => void;
+    videoRef: RefObject<HTMLVideoElement | null>;
+    canvasRef: RefObject<HTMLCanvasElement | null>;
+    side: "front" | "back";
+}
