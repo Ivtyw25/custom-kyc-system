@@ -55,7 +55,14 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                 onData: (data: any) => {
                     if (!isDetecting) return;
                     const result = Array.isArray(data) ? data[0] : data;
-                    console.log("Data", result);
+
+                    // Detailed logging for production debugging
+                    console.log("[Roboflow] Frame Data:", {
+                        variance: result?.variance,
+                        predictions: result?.boxes?.predictions?.length || 0,
+                        raw: result
+                    });
+
                     if (!result) return;
 
                     const variance = result.variance;

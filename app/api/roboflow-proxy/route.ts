@@ -12,6 +12,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Server configuration error: Missing API Key" }, { status: 500 });
         }
 
+        console.log("[Roboflow Proxy] Initializing session:", {
+            workspace: wrtcParams.workspaceName,
+            workflow: wrtcParams.workflowId
+        });
+
         const client = InferenceHTTPClient.init({ apiKey });
         const answer = await client.initializeWebrtcWorker({
             offer,
