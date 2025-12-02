@@ -1,7 +1,7 @@
 export const drawOverlay = (
     canvas: HTMLCanvasElement,
     video: HTMLVideoElement,
-    predictions: any[],
+    predictions: any,
     isStable: boolean
 ) => {
     const ctx = canvas.getContext("2d");
@@ -14,43 +14,43 @@ export const drawOverlay = (
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (predictions.length > 0) {
-        const pred = predictions[0];
-        const { x, y, width, height } = pred;
+    if (predictions && typeof predictions.x === 'number') {
+        const { x, y, width, height } = predictions;
 
-        // Calculate corners (x, y are center in Roboflow usually)
-        const xMin = x - width / 2;
-        const yMin = y - height / 2;
+        const x1 = x - width / 2;
+        const y1 = y - height / 2;
+        const x2 = x + width / 2;
+        const y2 = y + height / 2;
 
-        const color = isStable ? "#00FF00" : "#FFFFFF";
+        const color = isStable ? "#FF0000" : "#FFFFFF";
 
         // Draw corners
-        const cornerLength = 40;
-        const lineWidth = 4;
+        const cornerLength = 20;
+        const lineWidth = 10;
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         ctx.lineCap = "round";
 
         ctx.beginPath();
         // Top Left
-        ctx.moveTo(xMin, yMin + cornerLength);
-        ctx.lineTo(xMin, yMin);
-        ctx.lineTo(xMin + cornerLength, yMin);
+        ctx.moveTo(x1, y1 + cornerLength);
+        ctx.lineTo(x1, y1);
+        ctx.lineTo(x1 + cornerLength, y1);
 
         // Top Right
-        ctx.moveTo(xMin + width - cornerLength, yMin);
-        ctx.lineTo(xMin + width, yMin);
-        ctx.lineTo(xMin + width, yMin + cornerLength);
+        ctx.moveTo(x2 - cornerLength, y1);
+        ctx.lineTo(x2, y1);
+        ctx.lineTo(x2, y1 + cornerLength);
 
         // Bottom Right
-        ctx.moveTo(xMin + width, yMin + height - cornerLength);
-        ctx.lineTo(xMin + width, yMin + height);
-        ctx.lineTo(xMin + width - cornerLength, yMin + height);
+        ctx.moveTo(x2, y2 - cornerLength);
+        ctx.lineTo(x2, y2);
+        ctx.lineTo(x2 - cornerLength, y2);
 
         // Bottom Left
-        ctx.moveTo(xMin + cornerLength, yMin + height);
-        ctx.lineTo(xMin, yMin + height);
-        ctx.lineTo(xMin, yMin + height - cornerLength);
+        ctx.moveTo(x1 + cornerLength, y2);
+        ctx.lineTo(x1, y2);
+        ctx.lineTo(x1, y2 - cornerLength);
 
         ctx.stroke();
     }

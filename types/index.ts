@@ -27,7 +27,7 @@ import { RefObject } from "react";
 
 export interface UseRoboflowProps {
     isDetecting: boolean;
-    onStable: () => void;
+    onStable: (file?: File) => void;
     onFeedback: (msg: string) => void;
     videoRef: RefObject<HTMLVideoElement | null>;
     canvasRef: RefObject<HTMLCanvasElement | null>;

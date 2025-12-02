@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { connectors, webrtc, streams } from "@roboflow/inference-sdk";
 import toast from "react-hot-toast";
 import { drawOverlay } from "@/lib/drawing";
@@ -9,6 +9,8 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
     const streamRef = useRef<MediaStream | null>(null);
     const consecutiveDetectionsRef = useRef(0);
     const lastBoxRef = useRef<{ x: number, y: number, width: number, height: number } | null>(null);
+
+    const [isInitializing, setIsInitializing] = useState(true);
 
     const cleanup = useCallback(async () => {
         if (connectionRef.current) {
@@ -21,8 +23,14 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
         }
     }, []);
 
+    const initializingRef = useRef(false);
+
     const initRoboflow = useCallback(async () => {
+        if (initializingRef.current) return;
+        initializingRef.current = true;
+
         try {
+            setIsInitializing(true);
             const stream = await streams.useCamera({
                 video: {
                     facingMode: { ideal: "environment" },
@@ -55,21 +63,23 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                 onData: (data: any) => {
                     if (!isDetecting) return;
                     const result = Array.isArray(data) ? data[0] : data;
-
-                    // Detailed logging for production debugging
-                    console.log("[Roboflow] Frame Data:", {
-                        variance: result?.variance,
-                        predictions: result?.boxes?.predictions?.length || 0,
-                        raw: result
-                    });
+                    const raw = result.serialized_output_data
 
                     if (!result) return;
 
-                    const variance = result.variance;
-                    const predictions = result.boxes?.predictions || [];
+                    const variance = raw.variance;
+                    const predictions = raw.boxes?.predictions || [];
+                    const pred = predictions.length > 0 ? predictions[0] : null;
+                    const cropData = raw.dynamic_crop?.[0]?.crops || null;
+
+                    // Detailed logging for production debugging
+                    console.log("[Roboflow] Frame Data:", {
+                        variance: variance,
+                        predictions: predictions.length,
+                    });
 
                     if (canvasRef.current && videoRef.current) {
-                        drawOverlay(canvasRef.current, videoRef.current, predictions, consecutiveDetectionsRef.current >= 15);
+                        drawOverlay(canvasRef.current, videoRef.current, pred, consecutiveDetectionsRef.current >= 15);
                     }
 
                     // 1. Check for blur
@@ -80,14 +90,12 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     }
 
                     // 2. Check for detections
-                    if (predictions.length === 0) {
+                    if (!pred) {
                         onFeedback("ID not detected");
                         consecutiveDetectionsRef.current = 0;
                         lastBoxRef.current = null;
                         return;
                     }
-
-                    const pred = predictions[0];
 
                     // 3. Check for correct side
                     const expectedClass = side === "front" ? "IC-Front" : "IC-Back";
@@ -118,15 +126,38 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
 
                     if (consecutiveDetectionsRef.current >= 15) {
                         onFeedback("Image successfully captured");
-                        onStable();
+
+                        if (cropData && cropData.value) {
+                            try {
+                                const base64String = cropData.value;
+                                const byteCharacters = atob(base64String);
+                                const byteNumbers = new Array(byteCharacters.length);
+                                for (let i = 0; i < byteCharacters.length; i++) {
+                                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                }
+                                const byteArray = new Uint8Array(byteNumbers);
+                                const blob = new Blob([byteArray], { type: "image/jpeg" });
+                                const file = new File([blob], "captured_id.jpg", { type: "image/jpeg" });
+                                onStable(file);
+                            } catch (e) {
+                                console.error("Error converting crop to file:", e);
+                                onStable();
+                            }
+                        } else {
+                            onStable();
+                        }
                     }
                 }
             });
             connectionRef.current = connection;
+            setIsInitializing(false);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to init Roboflow:", error);
-            toast.error("Failed to start camera or inference");
+            toast.error("Camera permission denied. Please allow camera access in your browser settings.", { id: "camera-error" });
+            setIsInitializing(false);
+        } finally {
+            initializingRef.current = false;
         }
     }, [isDetecting, onStable, onFeedback, videoRef, canvasRef, side]);
 
@@ -139,5 +170,5 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
         };
     }, [isDetecting, initRoboflow, cleanup]);
 
-    return { cleanup };
+    return { cleanup, isInitializing };
 }

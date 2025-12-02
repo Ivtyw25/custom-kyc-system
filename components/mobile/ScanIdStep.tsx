@@ -18,43 +18,18 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     const [capturedFile, setCapturedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    const captureImage = useCallback(async () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        // Add padding by scaling down the image slightly
-        const scale = 0.95;
-        const w = canvas.width;
-        const h = canvas.height;
-        const dw = w * scale;
-        const dh = h * scale;
-        const dx = (w - dw) / 2;
-        const dy = (h - dh) / 2;
-
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(video, 0, 0, w, h, dx, dy, dw, dh);
-
-        canvas.toBlob(async (blob) => {
-            if (!blob) return;
-            const fileName = `id-${side}-${Date.now()}.jpg`;
-            const file = new File([blob], fileName, { type: "image/jpeg" });
-
+    const captureImage = useCallback((file?: File) => {
+        if (file) {
             setCapturedFile(file);
-            setPreviewUrl(URL.createObjectURL(blob));
+            setPreviewUrl(URL.createObjectURL(file));
             setIsDetecting(false);
-
             toast.success("Image successfully captured");
-        }, "image/jpeg", 1.0);
-    }, [side]);
+        } else {
+            toast.error("Capture failed. Please try again.");
+        }
+    }, []);
 
-    useRoboflow({
+    const { isInitializing } = useRoboflow({
         isDetecting,
         onStable: captureImage,
         onFeedback: setFeedback,
@@ -130,6 +105,14 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full pointer-events-none"
                 />
+
+                {isInitializing && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/80 backdrop-blur-sm z-10">
+                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-gray-700 font-medium text-sm">Starting Camera...</p>
+                        <span className="text-xs text-gray-500">This may take a few seconds</span>
+                    </div>
+                )}
 
                 <div className="absolute bottom-8 left-0 right-0 flex justify-center">
                     <div className="bg-gray-200/80 backdrop-blur-sm px-6 py-2 rounded-full text-gray-800 font-medium text-sm">
