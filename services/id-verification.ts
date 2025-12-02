@@ -1,15 +1,3 @@
-export async function detectId(imageBlob: Blob, side: "front" | "back") {
-    const formData = new FormData();
-    formData.append("image", imageBlob);
-    formData.append("side", side);
-
-    const res = await fetch("/api/detect-id", {
-        method: "POST",
-        body: formData,
-    });
-    return res.json();
-}
-
 export async function uploadFile(file: File, prefix: string, sessionId: string) {
     const rawExtension = file.type.split("/")[1];
     const extension = rawExtension === "jpeg" ? "jpg" : rawExtension;

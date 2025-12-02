@@ -3,7 +3,9 @@ import { InferenceHTTPClient } from "@roboflow/inference-sdk";
 
 export async function POST(req: NextRequest) {
     try {
-        const { offer, wrtcparams } = await req.json();
+        const body = await req.json();
+        const { offer } = body;
+        const wrtcParams = body.wrtcParams;
         const apiKey = process.env.ROBOFLOW_API_KEY;
 
         if (!apiKey) {
@@ -13,12 +15,12 @@ export async function POST(req: NextRequest) {
         const client = InferenceHTTPClient.init({ apiKey });
         const answer = await client.initializeWebrtcWorker({
             offer,
-            workspaceName: wrtcparams.workspaceName,
-            workflowId: wrtcparams.workflowId,
+            workspaceName: wrtcParams.workspaceName,
+            workflowId: wrtcParams.workflowId,
             config: {
-                imageInputName: wrtcparams.imageInputName,
-                streamOutputNames: wrtcparams.streamOutputNames,
-                dataOutputNames: wrtcparams.dataOutputNames,
+                imageInputName: wrtcParams.imageInputName,
+                streamOutputNames: wrtcParams.streamOutputNames,
+                dataOutputNames: wrtcParams.dataOutputNames,
             },
         });
 

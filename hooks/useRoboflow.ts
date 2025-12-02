@@ -34,7 +34,7 @@ export function useRoboflow({ workspaceName, workflowId, isDetecting, onStable, 
 
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                videoRef.current.play();
+                videoRef.current.play().catch(e => console.log("Play aborted", e));
             }
 
             const connector = connectors.withProxyUrl("/api/roboflow-proxy");
