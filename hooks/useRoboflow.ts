@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { drawOverlay } from "@/lib/drawing";
 import { UseRoboflowProps } from "@/types";
 
-export function useRoboflow({ workspaceName, workflowId, isDetecting, onStable, onFeedback, videoRef, canvasRef, side }: UseRoboflowProps) {
+export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canvasRef, side }: UseRoboflowProps) {
     const connectionRef = useRef<any>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const consecutiveDetectionsRef = useRef(0);
@@ -43,20 +43,22 @@ export function useRoboflow({ workspaceName, workflowId, isDetecting, onStable, 
                 source: stream,
                 connector,
                 wrtcParams: {
-                    workspaceName,
-                    workflowId,
+                    workspaceName: process.env.NEXT_PUBLIC_ROBOFLOW_WORKSPACE,
+                    workflowId: process.env.NEXT_PUBLIC_ROBOFLOW_WORKFLOW,
                     imageInputName: "image",
                     streamOutputNames: [],
                     dataOutputNames: ["*"],
                 },
+                options: {
+                    disableInputStreamDownscaling: true
+                },
                 onData: (data: any) => {
                     if (!isDetecting) return;
-
-                    // Handle array response from workflow
                     const result = Array.isArray(data) ? data[0] : data;
+                    console.log("Data", result);
                     if (!result) return;
 
-                    const isNotBlur = result.not_blur;
+                    const variance = result.variance;
                     const predictions = result.boxes?.predictions || [];
 
                     if (canvasRef.current && videoRef.current) {
@@ -64,7 +66,7 @@ export function useRoboflow({ workspaceName, workflowId, isDetecting, onStable, 
                     }
 
                     // 1. Check for blur
-                    if (isNotBlur === false) {
+                    if (typeof variance === 'number' && variance <= 100) {
                         onFeedback("Image is blurry");
                         consecutiveDetectionsRef.current = 0;
                         return;
@@ -119,7 +121,7 @@ export function useRoboflow({ workspaceName, workflowId, isDetecting, onStable, 
             console.error("Failed to init Roboflow:", error);
             toast.error("Failed to start camera or inference");
         }
-    }, [isDetecting, workspaceName, workflowId, onStable, onFeedback, videoRef, canvasRef, side]);
+    }, [isDetecting, onStable, onFeedback, videoRef, canvasRef, side]);
 
     useEffect(() => {
         if (isDetecting) {

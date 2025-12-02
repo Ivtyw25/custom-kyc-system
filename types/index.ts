@@ -26,8 +26,6 @@ export interface IntroStepProps {
 import { RefObject } from "react";
 
 export interface UseRoboflowProps {
-    workspaceName: string;
-    workflowId: string;
     isDetecting: boolean;
     onStable: () => void;
     onFeedback: (msg: string) => void;

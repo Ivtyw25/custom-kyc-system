@@ -55,8 +55,6 @@ export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
     }, [side]);
 
     useRoboflow({
-        workspaceName: ROBOFLOW_CONFIG.workspaceName,
-        workflowId: ROBOFLOW_CONFIG.workflowId,
         isDetecting,
         onStable: captureImage,
         onFeedback: setFeedback,
