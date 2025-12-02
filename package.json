@@ -16,6 +16,7 @@
     "@aws-sdk/client-sts": "^3.940.0",
     "@aws-sdk/s3-request-presigner": "^3.937.0",
     "@radix-ui/react-progress": "^1.1.8",
+    "@roboflow/inference-sdk": "^0.1.2",
     "@supabase/supabase-js": "^2.84.0",
     "aws-amplify": "^6.15.8",
     "class-variance-authority": "^0.7.1",
