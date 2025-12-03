@@ -12,6 +12,8 @@ import { ScanSelfieStepProps } from "@/types";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { uploadFile, compareFaces } from '@/services/id-verification';
+import { updateSessionStatus, updateSessionOCRData } from "@/services/session";
+import { analyzeIdImages } from "@/services/id-ocr";
 
 const FaceLivenessDetector = dynamic(
     () => import('@aws-amplify/ui-react-liveness').then((mod) => mod.FaceLivenessDetector),
@@ -26,6 +28,19 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
     const [loading, setLoading] = useState(false);
     const [livenessSessionId, setLivenessSessionID] = useState<string | null>(null)
     const router = useRouter();
+
+    const handleFailure = async (errorMessage: string) => {
+        console.error(errorMessage);
+        toast.error(errorMessage);
+        setLivenessSessionID(null);
+
+        try {
+            await updateSessionStatus(sessionId, "failed");
+            router.push("/kyc/failed");
+        } catch (err) {
+            console.error("Failed to update session status", err);
+        }
+    };
 
     useEffect(() => {
         const startSession = async () => {
@@ -43,35 +58,16 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const handleFailure = async (errorMessage: string) => {
-        console.error(errorMessage);
-        toast.error(errorMessage);
-        setLivenessSessionID(null);
-
-        try {
-            await fetch("/api/verification-session/status", {
-                method: "POST",
-                body: JSON.stringify({ sessionId, status: "failed" }),
-            });
-            router.push("/kyc/failed");
-        } catch (err) {
-            console.error("Failed to update session status", err);
-        }
-    };
-
     const handleAnalysisComplete = async () => {
         if (!livenessSessionId || !files.idFront || !files.idBack) return;
         try {
             const data = await getLivenessResults(livenessSessionId);
             if (data.isLive) {
                 toast.success("Liveness check passed, processing your verification");
-                await fetch("/api/verification-session/status", {
-                    method: "POST",
-                    body: JSON.stringify({ sessionId, status: "processing" }),
-                });
+                await updateSessionStatus(sessionId, "processing");
                 router.push("/kyc/processing");
                 const frontIdKey = await uploadFile(files.idFront, "id-front", sessionId);
-                const backIdKey = await uploadFile(files.idBack, "id-back", sessionId);
+                await uploadFile(files.idBack, "id-back", sessionId);
                 const selfieKey = `${sessionId}/${livenessSessionId}/reference.jpg`;
 
                 const compareResult = await compareFaces(frontIdKey, selfieKey);
@@ -80,10 +76,19 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
                     return;
                 }
 
-                await fetch("/api/verification-session/status", {
-                    method: "POST",
-                    body: JSON.stringify({ sessionId, status: "success" }),
-                });
+                const formData = new FormData();
+                if (files.idFront) formData.append("idFront", files.idFront);
+                if (files.idBack) formData.append("idBack", files.idBack);
+
+                const ocrResult = await analyzeIdImages(formData);
+                if (ocrResult) {
+                    await updateSessionOCRData(sessionId, ocrResult);
+                    console.log("OCR data saved successfully");
+                } else {
+                    console.error("Failed to extract OCR data");
+                }
+
+                await updateSessionStatus(sessionId, "success");
                 router.push("/kyc/success");
             } else {
                 handleFailure("Liveness check failed. Please try again.");

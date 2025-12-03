@@ -32,3 +32,23 @@ export async function getSessionStatus(sessionId: string): Promise<SessionStatus
         return null;
     }
 }
+export async function updateSessionOCRData(sessionId: string, ocrData: any) {
+    try {
+        const { error } = await supabase
+            .from("verification_sessions")
+            .update({
+                nric_number: ocrData.nricNumber,
+                nric_back: ocrData.back?.nricNumber,
+                name: ocrData.name,
+                address: ocrData.address,
+                gender: ocrData.gender
+            })
+            .eq("id", sessionId);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error("Failed to update session OCR data:", error);
+        throw error;
+    }
+}
