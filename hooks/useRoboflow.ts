@@ -46,7 +46,6 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
             }
 
             const connector = connectors.withProxyUrl("/api/roboflow-proxy");
-
             const connection = await webrtc.useStream({
                 source: stream,
                 connector,
@@ -83,7 +82,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     }
 
                     // 1. Check for blur
-                    if (typeof variance === 'number' && variance <= 90) {
+                    if (typeof variance === 'number' && variance <= 85) {
                         onFeedback("Image is blurry");
                         consecutiveDetectionsRef.current = 0;
                         return;
@@ -110,7 +109,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     if (lastBoxRef.current) {
                         const dx = Math.abs(pred.x - lastBoxRef.current.x);
                         const dy = Math.abs(pred.y - lastBoxRef.current.y);
-                        if (dx > 10 || dy > 10) {
+                        if (dx > 30 || dy > 30) {
                             isMoving = true;
                         }
                     }
@@ -124,7 +123,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                         onFeedback("Hold still...");
                     }
 
-                    if (consecutiveDetectionsRef.current >= 30) {
+                    if (consecutiveDetectionsRef.current >= 20) {
                         onFeedback("Image successfully captured");
 
                         if (cropData && cropData.value) {
@@ -154,7 +153,11 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
 
         } catch (error: any) {
             console.error("Failed to init Roboflow:", error);
-            toast.error("Camera permission denied. Please allow camera access in your browser settings.", { id: "camera-error" });
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                toast.error("Camera permission denied. Please allow camera access in your browser settings.", { id: "camera-error" });
+            } else {
+                toast.error("Connection terminated. Please refresh to try again.", { id: "connection-error" });
+            }
             setIsInitializing(false);
         } finally {
             initializingRef.current = false;

@@ -10,7 +10,7 @@ const ROBOFLOW_CONFIG = {
     workflowId: process.env.NEXT_PUBLIC_ROBOFLOW_WORKFLOW || ""
 };
 
-export function ScanIdStep({ onCapture, sessionId, side }: ScanIdStepProps) {
+export function ScanIdStep({ onCapture, side }: ScanIdStepProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDetecting, setIsDetecting] = useState(true);

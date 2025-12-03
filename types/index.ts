@@ -7,7 +7,6 @@ export type Step = "intro-id-front" | "intro-id-back" | "intro-selfie" | "scan-i
 
 export interface ScanIdStepProps {
     onCapture: (file: File) => void;
-    sessionId: string;
     side: "front" | "back";
 }
 
