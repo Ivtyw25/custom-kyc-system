@@ -69,7 +69,7 @@ export default function MobileCapture() {
                 )}
 
                 {step === "scan-id-front" && (
-                    <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} side="front" />
+                    <ScanIdStep onCapture={handleIdCaptured} side="front" />
                 )}
 
                 {step === "intro-id-back" && (
@@ -80,7 +80,7 @@ export default function MobileCapture() {
                 )}
 
                 {step === "scan-id-back" && (
-                    <ScanIdStep onCapture={handleIdCaptured} sessionId={sessionId} side="back" />
+                    <ScanIdStep onCapture={handleIdCaptured} side="back" />
                 )}
 
                 {step === "intro-selfie" && (
