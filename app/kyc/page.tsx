@@ -1,20 +1,22 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
 export default function DesktopKYC() {
     const [loading, setLoading] = useState(false);
+    const searchParams = useSearchParams();
+    const profileId = searchParams.get('id')
     const router = useRouter();
 
     const startVerification = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from("verification_sessions").insert({}).select().single();
+            const { data, error } = await supabase.from("verification_sessions").insert({'profileId': profileId}).select().single();
             if (error) throw error;
             if (data && data.id)
-                router.push(`/kyc/${data.id}`);
+                router.push(`/kyc/${data.id}?id=${profileId}`);
         } catch (err) {
             console.error("Error creating session:", err);
             alert("Failed to start verification. Please try again.");

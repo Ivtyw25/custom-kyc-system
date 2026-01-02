@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
 import { containerVariants, itemVariants } from "@lib/constants";
@@ -9,6 +9,8 @@ import { CheckCircle, XCircle } from "lucide-react";
 
 export default function SessionPage() {
     const { id: sessionId } = useParams();
+    const searchParams = useSearchParams();
+    const profileId = searchParams.get('id');
     const router = useRouter();
     const [status, setStatus] = useState("waiting"); // waiting, processing, success, failed
 
@@ -28,7 +30,7 @@ export default function SessionPage() {
         };
     }, [sessionId]);
 
-    const mobileUrl = `${process.env.NEXT_PUBLIC_APP_URL}/kyc/mobile/${sessionId}`;
+    const mobileUrl = `${process.env.NEXT_PUBLIC_APP_URL}/kyc/mobile/${sessionId}?id=${profileId}`;
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
             <motion.div
