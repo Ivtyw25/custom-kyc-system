@@ -12,9 +12,7 @@ export default function DesktopKYC() {
         setLoading(true);
         try {
             const { data, error } = await supabase.from("verification_sessions").insert({}).select().single();
-
             if (error) throw error;
-
             if (data && data.id)
                 router.push(`/kyc/${data.id}`);
         } catch (err) {

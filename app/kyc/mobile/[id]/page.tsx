@@ -35,7 +35,7 @@ export default function MobileCapture() {
             }
         };
         fetchSessionStatus();
-    }, []);
+    }, [router, sessionId]);
 
     const handleIdCaptured = (file: File) => {
         if (step === "scan-id-front") {
