@@ -52,3 +52,24 @@ export async function updateSessionOCRData(sessionId: string, ocrData: any) {
         throw error;
     }
 }
+
+export async function compareOcrResult(ocrData: any, profileId: string) {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('profile_id', profileId)
+            .single()
+        if (error) throw error;
+
+        if (data) {
+            const targetName = ocrData.name.toLowerCase();
+            if (data.name.toLowerCase() === targetName) 
+                return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Failed to get the profiles data")
+        throw error;
+    }
+}

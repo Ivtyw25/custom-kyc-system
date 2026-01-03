@@ -13,6 +13,7 @@ export interface ScanIdStepProps {
 export interface ScanSelfieStepProps {
     sessionId: string;
     files: Files;
+    profileId: string;
 }
 
 export interface IntroStepProps {

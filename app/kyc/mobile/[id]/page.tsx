@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams} from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,8 @@ import { supabase } from "@/lib/supabase";
 export default function MobileCapture() {
     const params = useParams();
     const sessionId = params.id as string;
+    const searchParams = useSearchParams();
+    const profileId = searchParams.get('id');
     const [step, setStep] = useState<Step>("intro-id-front");
     const [files, setFiles] = useState<Files>({});
     const [progress, setProgress] = useState(0);
@@ -91,7 +93,7 @@ export default function MobileCapture() {
                 )}
 
                 {step === "scan-selfie" && (
-                    <ScanSelfieStep sessionId={sessionId} files={files} />
+                    <ScanSelfieStep sessionId={sessionId} files={files} profileId={profileId as string}/>
                 )}
             </motion.div>
         </div>

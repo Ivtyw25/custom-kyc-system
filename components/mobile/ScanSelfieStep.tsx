@@ -12,8 +12,8 @@ import { ScanSelfieStepProps } from "@/types";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { uploadFile, compareFaces } from '@/services/id-verification';
-import { updateSessionStatus, updateSessionOCRData } from "@/services/session";
-import { analyzeIdImages } from "@/services/id-ocr";
+import { updateSessionStatus, updateSessionOCRData, compareOcrResult } from "@/services/session";
+import { analyzeIdImages } from "@/services/id-ocr"
 
 const FaceLivenessDetector = dynamic(
     () => import('@aws-amplify/ui-react-liveness').then((mod) => mod.FaceLivenessDetector),
@@ -24,7 +24,7 @@ const FaceLivenessDetector = dynamic(
 Amplify.configure(outputs);
 const customTheme: Theme = themes;
 
-export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
+export function ScanSelfieStep({ sessionId, files, profileId}: ScanSelfieStepProps) {
     const [loading, setLoading] = useState(false);
     const [livenessSessionId, setLivenessSessionID] = useState<string | null>(null)
     const router = useRouter();
@@ -86,9 +86,15 @@ export function ScanSelfieStep({ sessionId, files }: ScanSelfieStepProps) {
                     console.log("OCR data saved successfully");
                 } else {
                     console.error("Failed to extract OCR data");
+                    return;
                 }
+            
 
-                await updateSessionStatus(sessionId, "success");
+                const isSuccess = await compareOcrResult(ocrResult, profileId);
+                if (isSuccess)
+                    await updateSessionStatus(sessionId, "success");
+                else 
+                    await updateSessionStatus(sessionId, "failed")
                 router.push("/kyc/success");
             } else {
                 handleFailure("Liveness check failed. Please try again.");
