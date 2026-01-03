@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
@@ -7,7 +7,7 @@ import { containerVariants, itemVariants } from "@lib/constants";
 import { supabase } from "@/lib/supabase";
 import { CheckCircle, XCircle } from "lucide-react";
 
-export default function SessionPage() {
+function SessionPageContent() {
     const { id: sessionId } = useParams();
     const searchParams = useSearchParams();
     const profileId = searchParams.get('id');
@@ -114,5 +114,19 @@ export default function SessionPage() {
                 )}
             </motion.div>
         </div>
+    );
+}
+
+export default function SessionPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+                <div className="bg-white p-10 rounded-3xl shadow-lg text-center max-w-md w-full border border-gray-200">
+                    <h1 className="text-2xl font-bold mb-4 text-foreground">Loading...</h1>
+                </div>
+            </div>
+        }>
+            <SessionPageContent />
+        </Suspense>
     );
 }

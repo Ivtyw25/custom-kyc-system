@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
-export default function DesktopKYC() {
+function KYCContent() {
     const [loading, setLoading] = useState(false);
     const searchParams = useSearchParams();
     const profileId = searchParams.get('id')
@@ -13,7 +13,7 @@ export default function DesktopKYC() {
     const startVerification = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from("verification_sessions").insert({'profileId': profileId}).select().single();
+            const { data, error } = await supabase.from("verification_sessions").insert({ 'profileId': profileId }).select().single();
             if (error) throw error;
             if (data && data.id)
                 router.push(`/kyc/${data.id}?id=${profileId}`);
@@ -63,5 +63,19 @@ export default function DesktopKYC() {
                 </button>
             </motion.div>
         </div>
+    );
+}
+
+export default function DesktopKYC() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+                <div className="bg-white p-12 rounded-3xl shadow-lg text-center max-w-lg w-full border border-gray-200">
+                    <h1 className="text-4xl font-bold mb-8 text-foreground">Loading...</h1>
+                </div>
+            </div>
+        }>
+            <KYCContent />
+        </Suspense>
     );
 }

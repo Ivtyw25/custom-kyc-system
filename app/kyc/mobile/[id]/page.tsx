@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams} from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { ScanSelfieStep } from "@/components/mobile/ScanSelfieStep";
 import { Files, Step } from "@/types";
 import { supabase } from "@/lib/supabase";
 
-export default function MobileCapture() {
+function MobileCaptureContent() {
     const params = useParams();
     const sessionId = params.id as string;
     const searchParams = useSearchParams();
@@ -93,9 +93,23 @@ export default function MobileCapture() {
                 )}
 
                 {step === "scan-selfie" && (
-                    <ScanSelfieStep sessionId={sessionId} files={files} profileId={profileId as string}/>
+                    <ScanSelfieStep sessionId={sessionId} files={files} profileId={profileId as string} />
                 )}
             </motion.div>
         </div>
+    );
+}
+
+export default function MobileCapture() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex flex-col bg-background justify-center items-center p-4">
+                <div className="bg-white p-12 rounded-3xl shadow-lg text-center max-w-lg w-full border border-gray-200">
+                    <h1 className="text-4xl font-bold mb-8 text-foreground">Loading...</h1>
+                </div>
+            </div>
+        }>
+            <MobileCaptureContent />
+        </Suspense>
     );
 }
