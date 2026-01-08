@@ -9,6 +9,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
     const streamRef = useRef<MediaStream | null>(null);
     const consecutiveDetectionsRef = useRef(0);
     const lastBoxRef = useRef<{ x: number, y: number, width: number, height: number } | null>(null);
+    const lastLogTimeRef = useRef<number>(0);
 
     const [isInitializing, setIsInitializing] = useState(true);
 
@@ -77,12 +78,29 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                         predictions: predictions.length,
                     });
 
+                    // Send variance to Vercel logs (throttled to every 2 seconds)
+                    if (typeof variance === 'number') {
+                        const now = Date.now();
+                        if (now - lastLogTimeRef.current > 2000) {
+                            lastLogTimeRef.current = now;
+                            fetch('/api/debug/variance', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    variance,
+                                    side,
+                                    timestamp: new Date().toISOString()
+                                })
+                            }).catch(err => console.error("Failed to send variance log:", err));
+                        }
+                    }
+
                     if (canvasRef.current && videoRef.current) {
                         drawOverlay(canvasRef.current, videoRef.current, pred, consecutiveDetectionsRef.current >= 10);
                     }
 
                     // 1. Check for blur
-                    if (typeof variance === 'number' && variance <= 85) {
+                    if (typeof variance === 'number' && variance <= 80) {
                         onFeedback("Image is blurry");
                         consecutiveDetectionsRef.current = 0;
                         return;

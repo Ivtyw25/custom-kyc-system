@@ -12,8 +12,7 @@ function SessionPageContent() {
     const searchParams = useSearchParams();
     const profileId = searchParams.get('id');
     const router = useRouter();
-    const [status, setStatus] = useState("waiting"); // waiting, processing, success, failed
-
+    const [status, setStatus] = useState("waiting");
     useEffect(() => {
         if (!sessionId) return;
 
