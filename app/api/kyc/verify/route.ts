@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
             await updateStatus(sessionId, "failed");
             return NextResponse.json({ success: false, error: "OCR extraction failed" });
         }
+        console.log("OCR result:", ocrResult);
 
         // 5. Update OCR Data in DB
         console.log("Step 5: Saving OCR data to database...");
@@ -107,7 +108,7 @@ async function updateStatus(sessionId: string, status: string) {
     console.log(`Updating session ${sessionId} status to: ${status}`);
     const { error } = await supabase
         .from('verification_sessions')
-        .update({ status })
+        .update({ status: status})
         .eq('id', sessionId);
     if (error) {
         console.error("Failed to update status in DB:", error);
