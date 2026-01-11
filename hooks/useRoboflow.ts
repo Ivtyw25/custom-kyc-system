@@ -94,7 +94,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     }
 
                     // 1. Check for blur
-                    if (typeof variance === 'number' && variance <= 80) {
+                    if (typeof variance === 'number' && variance <= 70) {
                         onFeedback("Image is blurry");
                         consecutiveDetectionsRef.current = 0;
                         return;
@@ -121,7 +121,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     if (lastBoxRef.current) {
                         const dx = Math.abs(pred.x - lastBoxRef.current.x);
                         const dy = Math.abs(pred.y - lastBoxRef.current.y);
-                        if (dx > 30 || dy > 30) {
+                        if (dx > 50 || dy > 50) {
                             isMoving = true;
                         }
                     }
@@ -135,7 +135,7 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                         onFeedback("Hold still...");
                     }
 
-                    if (consecutiveDetectionsRef.current >= 20) {
+                    if (consecutiveDetectionsRef.current >= 15) {
                         onFeedback("Image successfully captured");
 
                         if (cropData && cropData.value) {
