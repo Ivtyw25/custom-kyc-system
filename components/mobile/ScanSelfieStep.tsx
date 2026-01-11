@@ -6,14 +6,13 @@ import { ThemeProvider, Theme } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { Amplify } from 'aws-amplify';
 import outputs from '@/amplify_outputs.json'
-import { createLivenessSession, getLivenessResults } from '@/services/liveness';
+import { createLivenessSession } from '@/services/liveness';
 import { themes } from '@lib/constants'
 import { ScanSelfieStepProps } from "@/types";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { uploadFile, compareFaces } from '@/services/id-verification';
-import { updateSessionStatus, updateSessionOCRData, compareOcrResult } from "@/services/session";
-import { analyzeIdImages } from "@/services/id-ocr"
+import { uploadFile } from '@/services/id-verification';
+import { updateSessionStatus } from "@/services/session";
 
 const FaceLivenessDetector = dynamic(
     () => import('@aws-amplify/ui-react-liveness').then((mod) => mod.FaceLivenessDetector),
@@ -24,7 +23,7 @@ const FaceLivenessDetector = dynamic(
 Amplify.configure(outputs);
 const customTheme: Theme = themes;
 
-export function ScanSelfieStep({ sessionId, files, profileId}: ScanSelfieStepProps) {
+export function ScanSelfieStep({ sessionId, files, profileId }: ScanSelfieStepProps) {
     const [loading, setLoading] = useState(false);
     const [livenessSessionId, setLivenessSessionID] = useState<string | null>(null)
     const router = useRouter();
@@ -60,49 +59,42 @@ export function ScanSelfieStep({ sessionId, files, profileId}: ScanSelfieStepPro
 
     const handleAnalysisComplete = async () => {
         if (!livenessSessionId || !files.idFront || !files.idBack) return;
+        setLoading(true);
         try {
-            const data = await getLivenessResults(livenessSessionId);
-            if (data.isLive) {
-                toast.success("Liveness check passed, processing your verification");
-                await updateSessionStatus(sessionId, "processing");
-                router.push("/kyc/processing");
-                const frontIdKey = await uploadFile(files.idFront, "id-front", sessionId);
-                await uploadFile(files.idBack, "id-back", sessionId);
-                const selfieKey = `${sessionId}/${livenessSessionId}/reference.jpg`;
+            toast.loading("Processing your verification...", { id: "kyc-verify" });
 
-                const compareResult = await compareFaces(frontIdKey, selfieKey);
-                if (!compareResult.success) {
-                    handleFailure("Face comparison failed. Please try again.");
-                    return;
-                }
+            // First, upload the ID images
+            const frontIdKey = await uploadFile(files.idFront, "id-front", sessionId);
+            const backIdKey = await uploadFile(files.idBack, "id-back", sessionId);
 
-                const formData = new FormData();
-                if (files.idFront) formData.append("idFront", files.idFront);
-                if (files.idBack) formData.append("idBack", files.idBack);
+            // Call the consolidated API
+            const response = await fetch("/api/kyc/verify", {
+                method: "POST",
+                body: JSON.stringify({
+                    sessionId,
+                    livenessSessionId,
+                    profileId,
+                    idFrontKey: frontIdKey,
+                    idBackKey: backIdKey
+                }),
+                headers: { "Content-Type": "application/json" }
+            });
 
-                const ocrResult = await analyzeIdImages(formData);
-                if (ocrResult) {
-                    await updateSessionOCRData(sessionId, ocrResult);
-                    console.log("OCR data saved successfully");
-                } else {
-                    console.error("Failed to extract OCR data");
-                    return;
-                }
-            
+            const result = await response.json();
 
-                const isSuccess = await compareOcrResult(ocrResult, profileId);
-                if (isSuccess)
-                    await updateSessionStatus(sessionId, "success");
-                else 
-                    await updateSessionStatus(sessionId, "failed")
+            if (result.success) {
+                toast.success("Verification successful!", { id: "kyc-verify" });
                 router.push("/kyc/success");
             } else {
-                handleFailure("Liveness check failed. Please try again.");
-                setLivenessSessionID(null);
+                toast.error(result.error || "Verification failed", { id: "kyc-verify" });
+                handleFailure(result.error || "Verification failed");
             }
         } catch (err) {
             console.error(err);
-            handleFailure("Error verifying liveness results.");
+            toast.error("An error occurred during verification", { id: "kyc-verify" });
+            handleFailure("Error verifying results.");
+        } finally {
+            setLoading(false);
         }
     };
 

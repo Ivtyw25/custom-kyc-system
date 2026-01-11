@@ -53,23 +53,29 @@ export async function updateSessionOCRData(sessionId: string, ocrData: any) {
     }
 }
 
-export async function compareOcrResult(ocrData: any, profileId: string) {
+export async function compareOcrResult(ocrData: any, profileId: string | null) {
+    if (!profileId || profileId === 'null') {
+        console.error("Invalid profileId provided to compareOcrResult:", profileId);
+        return false;
+    }
+
     try {
         const { data, error } = await supabase
             .from('profiles')
             .select('name')
             .eq('profile_id', profileId)
-            .single()
+            .single();
+
         if (error) throw error;
 
         if (data) {
             const targetName = ocrData.name.toLowerCase();
-            if (data.name.toLowerCase() === targetName) 
+            if (data.name.toLowerCase() === targetName)
                 return true;
         }
         return false;
     } catch (error) {
-        console.error("Failed to get the profiles data")
+        console.error("Failed to get the profiles data:", error);
         throw error;
     }
 }

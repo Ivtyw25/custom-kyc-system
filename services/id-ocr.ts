@@ -23,35 +23,39 @@ const schema = z.object({
 });
 
 export async function analyzeIdImages(formData: FormData) {
+    const idFront = formData.get("idFront") as File;
+    const idBack = formData.get("idBack") as File;
+
+    if (!idFront || !idBack) {
+        throw new Error("Missing ID images");
+    }
+
+    const frontBuffer = Buffer.from(await idFront.arrayBuffer());
+    const backBuffer = Buffer.from(await idBack.arrayBuffer());
+
+    return analyzeId(frontBuffer, backBuffer, idFront.type);
+}
+
+export async function analyzeId(frontBuffer: Buffer, backBuffer: Buffer, mimeType: string = 'image/jpeg') {
     try {
-        const idFront = formData.get("idFront") as File;
-        const idBack = formData.get("idBack") as File;
-
-        if (!idFront || !idBack) {
-            throw new Error("Missing ID images");
-        }
-
-        const frontBuffer = Buffer.from(await idFront.arrayBuffer());
-        const backBuffer = Buffer.from(await idBack.arrayBuffer());
-
         const contents = [
             { text: "Extract the information from this Malaysian Identity Card (MyKad). The first image is the front, and the second image is the back." },
             {
                 inlineData: {
-                    mimeType: idFront.type || 'image/jpeg',
+                    mimeType: mimeType,
                     data: frontBuffer.toString("base64")
                 }
             },
             {
                 inlineData: {
-                    mimeType: idBack.type || 'image/jpeg',
+                    mimeType: mimeType,
                     data: backBuffer.toString("base64")
                 }
             }
         ];
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             contents,
             config: {
                 responseMimeType: "application/json",
@@ -59,7 +63,9 @@ export async function analyzeIdImages(formData: FormData) {
             },
         });
 
-        return JSON.parse(response.text || "{}");
+        const result = JSON.parse(response.text || "{}");
+        console.log("OCR Result:", JSON.stringify(result, null, 2));
+        return result;
     } catch (error) {
         console.error("ID OCR Error:", error);
         return null;
