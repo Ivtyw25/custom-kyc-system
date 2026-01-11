@@ -72,12 +72,6 @@ export function useRoboflow({ isDetecting, onStable, onFeedback, videoRef, canva
                     const pred = predictions.length > 0 ? predictions[0] : null;
                     const cropData = raw.dynamic_crop?.[0]?.crops || null;
 
-                    // Detailed logging for production debugging
-                    console.log("[Roboflow] Frame Data:", {
-                        variance: variance,
-                        predictions: predictions.length,
-                    });
-
                     // Send variance to Vercel logs (throttled to every 2 seconds)
                     if (typeof variance === 'number') {
                         const now = Date.now();
