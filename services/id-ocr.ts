@@ -55,7 +55,7 @@ export async function analyzeId(frontBuffer: Buffer, backBuffer: Buffer, mimeTyp
         ];
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             contents,
             config: {
                 responseMimeType: "application/json",
